@@ -3,6 +3,11 @@ import { NextResponse, type NextRequest } from 'next/server'
 import type { SupabaseCookieOption } from '@/lib/supabase/cookie-types'
 
 export async function middleware(request: NextRequest) {
+  // Si les variables d'env Supabase ne sont pas configurées, on laisse passer
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return NextResponse.next()
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
