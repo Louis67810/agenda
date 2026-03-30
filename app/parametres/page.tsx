@@ -5,7 +5,6 @@ import Link from "next/link";
 
 const sections = [
   { href: "/parametres/compte", icon: "👤", label: "Compte", desc: "Profil, avatar, email" },
-  { href: "/parametres/points", icon: "⭐", label: "Système de points", desc: "Configurer les points et pénalités" },
   { href: "/parametres/integrations", icon: "🔗", label: "Intégrations", desc: "Google Calendar, École Directe" },
 ];
 
@@ -30,6 +29,11 @@ const DEFAULT_SCHEDULE: DaySchedule[] = [
 export default function ParametresPage() {
   const [recapTime, setRecapTime] = useState("21:00");
   const [schedule, setSchedule] = useState<DaySchedule[]>(DEFAULT_SCHEDULE);
+
+  // Points system
+  const [tasksTotalPoints, setTasksTotalPoints] = useState(6);
+  const [pomoDurationMin, setPomoDurationMin] = useState(25);
+
   const [saved, setSaved] = useState(false);
 
   function updateDay(i: number, patch: Partial<DaySchedule>) {
@@ -37,6 +41,7 @@ export default function ParametresPage() {
   }
 
   function handleSave() {
+    // In a real app, persist to Supabase / localStorage
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
@@ -68,6 +73,73 @@ export default function ParametresPage() {
         ))}
       </div>
 
+      {/* Système de points */}
+      <div className="card space-y-4">
+        <div>
+          <h3 className="section-title">Système de points</h3>
+          <p className="text-xs text-gray-400 mt-1">Configure comment les points sont calculés chaque jour</p>
+        </div>
+
+        <div className="bg-orange-50 rounded-xl p-4 space-y-3 border border-orange-100">
+          <p className="text-xs font-semibold text-orange-700 uppercase tracking-wide">Règles de calcul</p>
+          <ul className="text-xs text-gray-600 space-y-1.5">
+            <li className="flex items-start gap-2">
+              <span className="text-orange-500 mt-0.5">●</span>
+              <span><strong>Tâches :</strong> toutes les tâches du jour = <strong>{tasksTotalPoints} points</strong> au total, proportionnels au % réalisé</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-orange-500 mt-0.5">●</span>
+              <span><strong>Habitudes :</strong> chaque habitude accomplie = <strong>1 point</strong></span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-orange-500 mt-0.5">●</span>
+              <span><strong>Pomodoro :</strong> chaque session complète = <strong>0.5 point</strong></span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-medium text-gray-500 block mb-1.5">
+              Points totaux pour les tâches
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min={1}
+                max={20}
+                value={tasksTotalPoints}
+                onChange={(e) => setTasksTotalPoints(Number(e.target.value))}
+                className="flex-1 accent-orange-500"
+              />
+              <span className="text-lg font-extrabold text-orange-500 w-8 text-right">{tasksTotalPoints}</span>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">Points si 100% des tâches sont faites</p>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-gray-500 block mb-1.5">
+              Durée Pomodoro par défaut
+            </label>
+            <div className="flex gap-1">
+              {[25, 45, 60].map((min) => (
+                <button
+                  key={min}
+                  onClick={() => setPomoDurationMin(min)}
+                  className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${
+                    pomoDurationMin === min
+                      ? "bg-orange-500 text-white border-orange-500"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-orange-300"
+                  }`}
+                >
+                  {min} min
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Disponibilité par jour */}
       <div className="card space-y-4">
         <div>
@@ -86,7 +158,6 @@ export default function ParametresPage() {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  {/* Toggle */}
                   <button
                     onClick={() => updateDay(i, { enabled: !day.enabled })}
                     className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${
@@ -99,13 +170,9 @@ export default function ParametresPage() {
                       }`}
                     />
                   </button>
-
-                  {/* Day label */}
                   <span className={`w-24 text-sm font-medium shrink-0 ${day.enabled ? "text-gray-800" : "text-gray-400"}`}>
                     {label}
                   </span>
-
-                  {/* Time inputs */}
                   {day.enabled ? (
                     <div className="flex items-center gap-2 flex-1">
                       <input

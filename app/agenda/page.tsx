@@ -424,7 +424,7 @@ export default function AgendaPage() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
-  const [view, setView] = useState<"month"|"week">("month");
+  const [view, setView] = useState<"month"|"week">("week");
   const [allTasks, setAllTasks] = useState<Task[]>(INITIAL_TASKS);
   const [selectedTask, setSelectedTask] = useState<Task|null>(null);
   const [quickAddDate, setQuickAddDate] = useState<string|null>(null);

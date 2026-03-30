@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 
+// ─── Config (would come from params in a real app) ─────────────────────────
+const TASKS_TOTAL_POINTS = 6; // configurable in /parametres
+
 const todayTasks = [
   { id: 1, title: "Préparer la présentation client", time: "09:00 - 10:30", durationIncreased: true, addedMinutes: 30 },
   { id: 2, title: "Répondre aux emails urgents", time: "11:00 - 11:30", durationIncreased: false, addedMinutes: 0 },
@@ -31,35 +34,40 @@ export default function RecapPage() {
   const [submitted, setSubmitted] = useState(false);
   const totalSteps = 4;
 
-  // Step 1 state
+  // Step 1 — Tasks
   const [taskStatuses, setTaskStatuses] = useState<Record<number, TaskStatus>>({});
   const [justifications, setJustifications] = useState<Record<number, string>>({});
   const [justified, setJustified] = useState<Record<number, boolean | null>>({});
 
-  // Step 2 state
+  // Step 2 — Habits
   const [habitDone, setHabitDone] = useState<Record<number, boolean>>({});
   const [habitValues, setHabitValues] = useState<Record<number, string>>({});
 
-  // Step 3 state
+  // Step 3 — Bilan
   const [dayScore, setDayScore] = useState(7);
   const [mood, setMood] = useState("");
   const [moodNote, setMoodNote] = useState("");
+  const [videoNote, setVideoNote] = useState("");
 
+  // ─── Points calculation (new system) ──────────────────────────────────────
   const doneTasksCount = Object.values(taskStatuses).filter((s) => s === "done").length;
   const missedTasksCount = Object.values(taskStatuses).filter((s) => s === "missed").length;
   const doneHabitsCount = Object.values(habitDone).filter(Boolean).length;
 
-  const pointsGained =
-    doneTasksCount * 25 +
-    doneHabitsCount * 10 +
-    (dayScore >= 8 ? 20 : dayScore >= 6 ? 10 : 0);
+  // Tasks: proportional share of TASKS_TOTAL_POINTS
+  const taskCompletionRatio = todayTasks.length > 0 ? doneTasksCount / todayTasks.length : 0;
+  const taskPoints = Math.round(TASKS_TOTAL_POINTS * taskCompletionRatio * 10) / 10;
 
-  const pointsLost =
-    missedTasksCount * 15 +
-    todayTasks.filter(
-      (t) => t.durationIncreased && taskStatuses[t.id] === "done" && justified[t.id] === false
-    ).length * 8;
+  // Habits: 1 point each
+  const habitPoints = doneHabitsCount;
 
+  // Deductions: 0.5 per unjustified time addition
+  const unjustifiedCount = todayTasks.filter(
+    (t) => t.durationIncreased && taskStatuses[t.id] === "done" && justified[t.id] === false
+  ).length;
+  const deductions = unjustifiedCount * 0.5;
+
+  const netPoints = Math.max(0, taskPoints + habitPoints - deductions);
   const totalBase = 2890;
 
   if (submitted) {
@@ -75,34 +83,45 @@ export default function RecapPage() {
             <h2 className="text-2xl font-bold text-gray-800">Récap validé !</h2>
             <p className="text-gray-400 text-sm mt-2">Belle journée. Continue comme ça !</p>
           </div>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="bg-emerald-50 rounded-xl p-4">
-              <p className="text-2xl font-bold text-emerald-600">+{pointsGained}</p>
-              <p className="text-xs text-emerald-700 mt-0.5">Points gagnés</p>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-orange-50 rounded-xl p-4 border border-orange-100">
+              <p className="text-xs text-orange-600 font-semibold mb-1">Tâches</p>
+              <p className="text-2xl font-bold text-orange-600">+{taskPoints}</p>
+              <p className="text-[10px] text-gray-400">{doneTasksCount}/{todayTasks.length} faites</p>
             </div>
-            <div className="bg-red-50 rounded-xl p-4">
-              <p className="text-2xl font-bold text-red-500">-{pointsLost}</p>
-              <p className="text-xs text-red-600 mt-0.5">Points perdus</p>
+            <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
+              <p className="text-xs text-emerald-600 font-semibold mb-1">Habitudes</p>
+              <p className="text-2xl font-bold text-emerald-600">+{habitPoints}</p>
+              <p className="text-[10px] text-gray-400">{doneHabitsCount}/{todayHabits.length} faites</p>
             </div>
-            <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
-              <p className={`text-2xl font-bold ${pointsGained - pointsLost >= 0 ? "text-orange-500" : "text-red-500"}`}>
-                {pointsGained - pointsLost >= 0 ? "+" : ""}{pointsGained - pointsLost}
+            <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+              <p className="text-xs text-blue-600 font-semibold mb-1">Net du jour</p>
+              <p className="text-2xl font-bold text-blue-600">+{netPoints}</p>
+              <p className="text-[10px] text-gray-400">
+                {deductions > 0 ? `-${deductions} pénalités` : "Aucune pénalité"}
               </p>
-              <p className="text-xs text-orange-600 mt-0.5">Net du jour</p>
             </div>
           </div>
           <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-100">
             <p className="text-xs text-gray-400 mb-1">Score total</p>
             <div className="flex items-end gap-2 justify-center">
-              <span className="text-5xl font-extrabold text-orange-500">{totalBase + (pointsGained - pointsLost)}</span>
+              <span className="text-5xl font-extrabold text-orange-500">
+                {(totalBase + netPoints).toFixed(1).replace(".0", "")}
+              </span>
               <span className="text-gray-400 mb-1">pts</span>
             </div>
             <p className="text-xs text-gray-400 mt-2">
               {doneTasksCount}/{todayTasks.length} tâches · {doneHabitsCount}/{todayHabits.length} habitudes · {dayScore}/10
             </p>
           </div>
+          {videoNote && (
+            <div className="bg-violet-50 border border-violet-100 rounded-xl p-3 text-left">
+              <p className="text-xs font-semibold text-violet-600 mb-1">📹 Note vidéo enregistrée</p>
+              <p className="text-xs text-gray-500">{videoNote}</p>
+            </div>
+          )}
           <button
-            onClick={() => { setSubmitted(false); setStep(1); setTaskStatuses({}); setHabitDone({}); setMood(""); setDayScore(7); setMoodNote(""); }}
+            onClick={() => { setSubmitted(false); setStep(1); setTaskStatuses({}); setHabitDone({}); setMood(""); setDayScore(7); setMoodNote(""); setVideoNote(""); }}
             className="text-sm text-gray-400 hover:text-gray-600 underline transition-colors"
           >
             Recommencer
@@ -147,8 +166,17 @@ export default function RecapPage() {
       {/* Step 1 — Tâches */}
       {step === 1 && (
         <div className="card space-y-4">
-          <h3 className="section-title">Tâches du jour</h3>
-          <p className="text-sm text-gray-400">Comment s&apos;est passée chaque tâche ?</p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="section-title">Tâches du jour</h3>
+              <p className="text-sm text-gray-400 mt-0.5">Comment s&apos;est passée chaque tâche ?</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-400">Points tâches</p>
+              <p className="text-lg font-bold text-orange-500">+{taskPoints}</p>
+              <p className="text-[10px] text-gray-400">/{TASKS_TOTAL_POINTS} max</p>
+            </div>
+          </div>
           {todayTasks.map((task) => (
             <div key={task.id} className="border border-gray-100 rounded-xl p-4 space-y-3">
               <div className="flex items-start justify-between">
@@ -212,8 +240,17 @@ export default function RecapPage() {
       {/* Step 2 — Habitudes */}
       {step === 2 && (
         <div className="card space-y-4">
-          <h3 className="section-title">Habitudes du jour</h3>
-          <p className="text-sm text-gray-400">Qu&apos;est-ce que tu as accompli aujourd&apos;hui ?</p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="section-title">Habitudes du jour</h3>
+              <p className="text-sm text-gray-400 mt-0.5">Chaque habitude accomplie = 1 point</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-400">Points habitudes</p>
+              <p className="text-lg font-bold text-emerald-500">+{doneHabitsCount}</p>
+              <p className="text-[10px] text-gray-400">/{todayHabits.length} max</p>
+            </div>
+          </div>
           {todayHabits.map((h) => (
             <div
               key={h.id}
@@ -230,7 +267,10 @@ export default function RecapPage() {
                 )}
               </div>
               <span className="text-lg">{h.icon}</span>
-              <span className="flex-1 text-sm font-medium text-gray-700">{h.name}</span>
+              <div className="flex-1">
+                <span className="text-sm font-medium text-gray-700">{h.name}</span>
+              </div>
+              <span className="text-xs font-bold text-emerald-600">+1 pt</span>
               {h.hasTarget && (
                 <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                   <input
@@ -245,63 +285,83 @@ export default function RecapPage() {
               )}
             </div>
           ))}
-          {doneHabitsCount > 0 && (
-            <p className="text-xs text-emerald-600 font-medium text-center">
-              {doneHabitsCount}/{todayHabits.length} habitudes · +{doneHabitsCount * 10} pts
-            </p>
-          )}
         </div>
       )}
 
-      {/* Step 3 — Bilan */}
+      {/* Step 3 — Bilan + Vidéo */}
       {step === 3 && (
-        <div className="card space-y-5">
-          <h3 className="section-title">Bilan de ta journée</h3>
+        <div className="space-y-4">
+          <div className="card space-y-5">
+            <h3 className="section-title">Bilan de ta journée</h3>
 
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-sm font-medium text-gray-700">Note de la journée</p>
-              <span className="text-2xl font-extrabold text-orange-500">{dayScore}/10</span>
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-sm font-medium text-gray-700">Note de la journée</p>
+                <span className="text-2xl font-extrabold text-orange-500">{dayScore}/10</span>
+              </div>
+              <input
+                type="range" min={1} max={10} value={dayScore}
+                onChange={(e) => setDayScore(Number(e.target.value))}
+                className="w-full accent-orange-500"
+              />
+              <div className="flex justify-between text-xs text-gray-400 mt-1">
+                <span>Horrible</span><span>Excellent</span>
+              </div>
             </div>
-            <input
-              type="range"
-              min={1}
-              max={10}
-              value={dayScore}
-              onChange={(e) => setDayScore(Number(e.target.value))}
-              className="w-full accent-orange-500"
-            />
-            <div className="flex justify-between text-xs text-gray-400 mt-1">
-              <span>Horrible</span><span>Excellent</span>
+
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-3">Comment tu t&apos;es senti ?</p>
+              <div className="flex gap-2">
+                {moods.map((m) => (
+                  <button
+                    key={m.value}
+                    onClick={() => setMood(m.value)}
+                    className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border transition-all ${
+                      mood === m.value ? "border-orange-400 bg-orange-50" : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <span className="text-2xl">{m.emoji}</span>
+                    <span className="text-[10px] text-gray-500">{m.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-sm font-medium text-gray-700 mb-2">Note libre (optionnel)</p>
+              <textarea
+                value={moodNote}
+                onChange={(e) => setMoodNote(e.target.value)}
+                placeholder="Qu'est-ce qui s'est bien passé ? Qu'est-ce que tu veux améliorer ?"
+                className="w-full text-sm border border-gray-200 rounded-xl p-3 resize-none h-24 focus:outline-none focus:border-orange-300"
+              />
             </div>
           </div>
 
-          <div>
-            <p className="text-sm font-medium text-gray-700 mb-3">Comment tu t&apos;es senti ?</p>
-            <div className="flex gap-2">
-              {moods.map((m) => (
-                <button
-                  key={m.value}
-                  onClick={() => setMood(m.value)}
-                  className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border transition-all ${
-                    mood === m.value ? "border-orange-400 bg-orange-50" : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <span className="text-2xl">{m.emoji}</span>
-                  <span className="text-[10px] text-gray-500">{m.label}</span>
-                </button>
-              ))}
+          {/* Section Vidéo */}
+          <div className="card space-y-3">
+            <div>
+              <h3 className="section-title">📹 Vidéo du jour</h3>
+              <p className="text-xs text-gray-400 mt-1">Enregistre une courte vidéo pour te souvenir de ta journée</p>
             </div>
-          </div>
-
-          <div>
-            <p className="text-sm font-medium text-gray-700 mb-2">Note libre (optionnel)</p>
-            <textarea
-              value={moodNote}
-              onChange={(e) => setMoodNote(e.target.value)}
-              placeholder="Qu'est-ce qui s'est bien passé ? Qu'est-ce que tu veux améliorer ?"
-              className="w-full text-sm border border-gray-200 rounded-xl p-3 resize-none h-24 focus:outline-none focus:border-orange-300"
-            />
+            <div className="bg-violet-50 border-2 border-dashed border-violet-200 rounded-xl p-6 text-center space-y-3">
+              <div className="w-12 h-12 bg-violet-100 rounded-full flex items-center justify-center mx-auto">
+                <svg className="w-6 h-6 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-violet-700">Fonctionnalité en cours de développement</p>
+                <p className="text-xs text-gray-400 mt-1">L&apos;enregistrement vidéo sera disponible prochainement via Supabase Storage</p>
+              </div>
+              <input
+                type="text"
+                value={videoNote}
+                onChange={(e) => setVideoNote(e.target.value)}
+                placeholder="En attendant, ajoute une note écrite sur ta journée..."
+                className="w-full text-sm border border-violet-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:border-violet-400"
+              />
+            </div>
           </div>
         </div>
       )}
@@ -312,32 +372,34 @@ export default function RecapPage() {
           <div className="card">
             <h3 className="section-title mb-4">Résumé des points</h3>
             <div className="space-y-2">
-              <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-xl">
+              <div className="flex justify-between items-center p-3 bg-orange-50 rounded-xl">
                 <div>
-                  <span className="text-sm text-emerald-700 font-medium">Points gagnés</span>
-                  <p className="text-xs text-emerald-600 mt-0.5">
-                    {doneTasksCount} tâche{doneTasksCount !== 1 ? "s" : ""} × 25 + {doneHabitsCount} habitude{doneHabitsCount !== 1 ? "s" : ""} × 10
-                    {dayScore >= 8 ? " + bonus humeur +20" : dayScore >= 6 ? " + bonus humeur +10" : ""}
+                  <span className="text-sm text-orange-700 font-medium">Tâches</span>
+                  <p className="text-xs text-orange-500 mt-0.5">
+                    {doneTasksCount}/{todayTasks.length} faites → {Math.round(taskCompletionRatio * 100)}% × {TASKS_TOTAL_POINTS} pts
                   </p>
                 </div>
-                <span className="text-lg font-extrabold text-emerald-600">+{pointsGained}</span>
+                <span className="text-lg font-extrabold text-orange-600">+{taskPoints}</span>
               </div>
-              <div className="flex justify-between items-center p-3 bg-red-50 rounded-xl">
+              <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-xl">
                 <div>
-                  <span className="text-sm text-red-600 font-medium">Points perdus</span>
-                  {pointsLost > 0 && (
-                    <p className="text-xs text-red-500 mt-0.5">
-                      {missedTasksCount > 0 ? `${missedTasksCount} tâche(s) ratée(s) × 15` : ""}
-                    </p>
-                  )}
+                  <span className="text-sm text-emerald-700 font-medium">Habitudes</span>
+                  <p className="text-xs text-emerald-500 mt-0.5">{doneHabitsCount} × 1 pt chacune</p>
                 </div>
-                <span className="text-lg font-extrabold text-red-500">-{pointsLost}</span>
+                <span className="text-lg font-extrabold text-emerald-600">+{habitPoints}</span>
               </div>
-              <div className="flex justify-between items-center p-3 bg-orange-50 rounded-xl border border-orange-200">
-                <span className="text-sm text-orange-700 font-semibold">Net du jour</span>
-                <span className={`text-xl font-extrabold ${pointsGained - pointsLost >= 0 ? "text-orange-500" : "text-red-500"}`}>
-                  {pointsGained - pointsLost >= 0 ? "+" : ""}{pointsGained - pointsLost}
-                </span>
+              {deductions > 0 && (
+                <div className="flex justify-between items-center p-3 bg-red-50 rounded-xl">
+                  <div>
+                    <span className="text-sm text-red-600 font-medium">Pénalités</span>
+                    <p className="text-xs text-red-400 mt-0.5">{unjustifiedCount} ajout(s) de temps non justifié(s)</p>
+                  </div>
+                  <span className="text-lg font-extrabold text-red-500">-{deductions}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-200">
+                <span className="text-sm text-blue-700 font-semibold">Net du jour</span>
+                <span className="text-xl font-extrabold text-blue-600">+{netPoints}</span>
               </div>
             </div>
           </div>
@@ -345,11 +407,13 @@ export default function RecapPage() {
           <div className="card">
             <h3 className="section-title mb-3">Score total</h3>
             <div className="flex items-end gap-2">
-              <span className="text-5xl font-extrabold text-orange-500">{totalBase + (pointsGained - pointsLost)}</span>
+              <span className="text-5xl font-extrabold text-orange-500">
+                {(totalBase + netPoints).toFixed(1).replace(".0", "")}
+              </span>
               <span className="text-gray-400 mb-1">pts</span>
             </div>
             <p className="text-xs text-gray-400 mt-2">
-              Tâches terminées : {doneTasksCount}/{todayTasks.length} · Habitudes : {doneHabitsCount}/{todayHabits.length} · Note : {dayScore}/10
+              {doneTasksCount}/{todayTasks.length} tâches · {doneHabitsCount}/{todayHabits.length} habitudes · Note {dayScore}/10
             </p>
           </div>
 

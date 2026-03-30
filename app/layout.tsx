@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
+import PomodoroTimer from "@/components/pomodoro/PomodoroTimer";
 
 export const metadata: Metadata = {
   title: "Agenda — Organisation Personnelle",
@@ -23,6 +24,7 @@ export default function RootLayout({
           <Header />
           <main className="flex-1 p-8">{children}</main>
         </div>
+        <PomodoroTimer />
       </body>
     </html>
   );

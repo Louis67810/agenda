@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 
+// ─── Mock data ──────────────────────────────────────────────────────────────
+
 const stats = [
-  { label: "Score total", value: "2 845", unit: "pts", trend: "+245", color: "text-orange-500" },
-  { label: "Tâches complétées", value: "87", unit: "%", trend: "+5%", color: "text-emerald-500" },
-  { label: "Habitudes", value: "74", unit: "%", trend: "+3%", color: "text-blue-500" },
-  { label: "Streak actuel", value: "12", unit: "jours", trend: "🔥", color: "text-amber-500" },
+  { label: "Score total", value: "2 890", unit: "pts", trend: "+290 ce mois", color: "text-orange-500" },
+  { label: "Tâches", value: "84", unit: "%", trend: "+7% vs mois dernier", color: "text-emerald-500" },
+  { label: "Habitudes", value: "76", unit: "%", trend: "+4% vs mois dernier", color: "text-blue-500" },
+  { label: "Focus Pomodoro", value: "48", unit: "h", trend: "Ce mois", color: "text-violet-500" },
 ];
 
 const weeklyTasks = [
@@ -30,16 +32,33 @@ const habits = [
   { name: "Boire 2L", icon: "💧", logs: [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0] },
 ];
 
-const moodCalendar = Array.from({ length: 30 }, (_, i) => ({
+// Scores par jour (points gagnés) — March 2026
+const dailyPoints = Array.from({ length: 30 }, (_, i) => ({
   day: i + 1,
-  score: Math.floor(Math.random() * 5) + 5,
-}));
+  taskPoints: parseFloat((Math.random() * 6).toFixed(1)),
+  habitPoints: Math.floor(Math.random() * 6),
+  pomodoroSessions: Math.floor(Math.random() * 5),
+  mood: Math.floor(Math.random() * 5) + 5,
+  tasksTotal: Math.floor(Math.random() * 5) + 2,
+  tasksDone: 0,
+})).map((d) => ({ ...d, tasksDone: Math.floor(d.tasksTotal * (0.5 + Math.random() * 0.5)) }));
 
 const objectives = [
-  { title: "Finir mon site portfolio", progress: 65, color: "bg-orange-500" },
-  { title: "Courir 500 km", progress: 45, color: "bg-emerald-500" },
-  { title: "Lire 24 livres", progress: 33, color: "bg-blue-500" },
-  { title: "Apprendre Next.js", progress: 80, color: "bg-purple-500" },
+  { title: "Maîtriser Next.js 15", progress: 72, color: "bg-orange-500" },
+  { title: "Courir 10 km < 50 min", progress: 55, color: "bg-emerald-500" },
+  { title: "Épargner 2 000 €", progress: 80, color: "bg-blue-500" },
+  { title: "Lire 12 livres", progress: 25, color: "bg-purple-500" },
+];
+
+// Pomodoro sessions mock
+const pomodoroWeekly = [
+  { day: "Lun", sessions: 4, minutes: 100 },
+  { day: "Mar", sessions: 3, minutes: 75 },
+  { day: "Mer", sessions: 6, minutes: 150 },
+  { day: "Jeu", sessions: 2, minutes: 50 },
+  { day: "Ven", sessions: 5, minutes: 125 },
+  { day: "Sam", sessions: 1, minutes: 25 },
+  { day: "Dim", sessions: 0, minutes: 0 },
 ];
 
 function moodColor(score: number) {
@@ -50,9 +69,62 @@ function moodColor(score: number) {
   return "bg-red-400";
 }
 
+interface DayDetailProps {
+  day: typeof dailyPoints[0];
+  onClose: () => void;
+}
+
+function DayDetailModal({ day, onClose }: DayDetailProps) {
+  const total = day.taskPoints + day.habitPoints + day.pomodoroSessions * 0.5;
+  return (
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold text-gray-800">Jour {day.day} mars 2026</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        {/* Points breakdown */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-orange-50 rounded-xl p-3">
+            <p className="text-xs text-orange-600 font-semibold">Tâches</p>
+            <p className="text-xl font-bold text-orange-600">+{day.taskPoints}</p>
+            <p className="text-[10px] text-gray-400">{day.tasksDone}/{day.tasksTotal} faites</p>
+          </div>
+          <div className="bg-emerald-50 rounded-xl p-3">
+            <p className="text-xs text-emerald-600 font-semibold">Habitudes</p>
+            <p className="text-xl font-bold text-emerald-600">+{day.habitPoints}</p>
+            <p className="text-[10px] text-gray-400">{day.habitPoints} réalisées</p>
+          </div>
+          <div className="bg-violet-50 rounded-xl p-3">
+            <p className="text-xs text-violet-600 font-semibold">Pomodoro</p>
+            <p className="text-xl font-bold text-violet-600">{day.pomodoroSessions}</p>
+            <p className="text-[10px] text-gray-400">{day.pomodoroSessions * 25} min focus</p>
+          </div>
+          <div className="bg-blue-50 rounded-xl p-3">
+            <p className="text-xs text-blue-600 font-semibold">Humeur</p>
+            <p className="text-xl font-bold text-blue-600">{day.mood}/10</p>
+            <p className="text-[10px] text-gray-400">Note de la journée</p>
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-100">
+          <span className="text-sm font-semibold text-orange-700">Total du jour</span>
+          <span className="text-xl font-extrabold text-orange-500">+{total.toFixed(1)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PerformancesPage() {
   const [period, setPeriod] = useState<"7j" | "30j" | "tout">("30j");
+  const [selectedDay, setSelectedDay] = useState<typeof dailyPoints[0] | null>(null);
   const maxScore = Math.max(...scoreHistory);
+  const maxPomo = Math.max(...pomodoroWeekly.map((p) => p.sessions));
+  const totalFocusH = Math.round(pomodoroWeekly.reduce((s, p) => s + p.minutes, 0) / 60 * 10) / 10;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -86,21 +158,21 @@ export default function PerformancesPage() {
               <span className={`text-3xl font-extrabold ${s.color}`}>{s.value}</span>
               <span className="text-gray-400 text-sm mb-1">{s.unit}</span>
             </div>
-            <p className="text-xs text-emerald-500 font-medium mt-1">{s.trend} vs mois dernier</p>
+            <p className="text-xs text-gray-400 mt-1">{s.trend}</p>
           </div>
         ))}
       </div>
 
-      {/* Score global chart */}
+      {/* Score chart */}
       <div className="card">
-        <h3 className="section-title mb-4">Évolution du score</h3>
+        <h3 className="section-title mb-4">Évolution du score (30 jours)</h3>
         <div className="flex items-end gap-1 h-32">
           {scoreHistory.map((val, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center justify-end gap-1">
+            <div key={i} className="flex-1 flex flex-col items-center justify-end">
               <div
-                className="w-full rounded-t-sm bg-orange-400 opacity-80 hover:opacity-100 transition-opacity"
+                className="w-full rounded-t-sm bg-orange-400 opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
                 style={{ height: `${(val / maxScore) * 100}%` }}
-                title={`${val} pts`}
+                title={`Jour ${i + 1} — ${val} pts`}
               />
             </div>
           ))}
@@ -112,7 +184,7 @@ export default function PerformancesPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Weekly tasks bar chart */}
+        {/* Weekly tasks */}
         <div className="card">
           <h3 className="section-title mb-4">Tâches terminées / semaine</h3>
           <div className="space-y-2">
@@ -133,7 +205,7 @@ export default function PerformancesPage() {
           </div>
         </div>
 
-        {/* Objectives progress */}
+        {/* Objectives */}
         <div className="card">
           <h3 className="section-title mb-4">Progression des objectifs</h3>
           <div className="space-y-4">
@@ -152,16 +224,40 @@ export default function PerformancesPage() {
         </div>
       </div>
 
+      {/* Pomodoro stats */}
+      <div className="card">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="section-title">Sessions Pomodoro — cette semaine</h3>
+          <span className="text-sm font-bold text-violet-600">{totalFocusH}h de focus</span>
+        </div>
+        <div className="flex items-end gap-2 h-24">
+          {pomodoroWeekly.map((p) => (
+            <div key={p.day} className="flex-1 flex flex-col items-center gap-1">
+              <span className="text-xs text-violet-600 font-semibold">{p.sessions > 0 ? p.sessions : ""}</span>
+              <div className="w-full flex flex-col justify-end" style={{ height: "64px" }}>
+                <div
+                  className="w-full rounded-t-lg bg-violet-400 hover:bg-violet-500 transition-colors"
+                  style={{ height: maxPomo > 0 ? `${(p.sessions / maxPomo) * 64}px` : "0px" }}
+                  title={`${p.sessions} sessions · ${p.minutes} min`}
+                />
+              </div>
+              <span className="text-[10px] text-gray-400">{p.day}</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-gray-400 mt-3">Chaque barre = sessions de 25 min. Total : {pomodoroWeekly.reduce((s, p) => s + p.sessions, 0)} sessions</p>
+      </div>
+
       {/* Habits heatmap */}
       <div className="card">
         <h3 className="section-title mb-4">Habitudes — 30 derniers jours</h3>
         <div className="space-y-3">
           {habits.map((h) => (
             <div key={h.name} className="flex items-center gap-4">
-              <span className="text-sm w-44 flex items-center gap-2 text-gray-600">
+              <span className="text-sm w-44 flex items-center gap-2 text-gray-600 shrink-0">
                 <span>{h.icon}</span>{h.name}
               </span>
-              <div className="flex gap-1 flex-wrap">
+              <div className="flex gap-1 flex-wrap flex-1">
                 {h.logs.map((done, i) => (
                   <div
                     key={i}
@@ -170,7 +266,7 @@ export default function PerformancesPage() {
                   />
                 ))}
               </div>
-              <span className="text-xs text-gray-400 ml-1">
+              <span className="text-xs text-gray-400 shrink-0">
                 {h.logs.filter(Boolean).length}/30
               </span>
             </div>
@@ -178,27 +274,43 @@ export default function PerformancesPage() {
         </div>
       </div>
 
-      {/* Mood calendar */}
+      {/* Daily points calendar — clickable */}
       <div className="card">
-        <h3 className="section-title mb-4">Calendrier humeur — Mars 2026</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="section-title">Points par jour — Mars 2026</h3>
+          <p className="text-xs text-gray-400">Clique sur un jour pour le détail</p>
+        </div>
         <div className="grid grid-cols-10 gap-1.5">
-          {moodCalendar.map((d) => (
-            <div
-              key={d.day}
-              className={`aspect-square rounded-lg ${moodColor(d.score)} flex items-center justify-center`}
-              title={`Jour ${d.day} — ${d.score}/10`}
-            >
-              <span className="text-[10px] font-bold text-white">{d.day}</span>
-            </div>
-          ))}
+          {dailyPoints.map((d) => {
+            const total = d.taskPoints + d.habitPoints + d.pomodoroSessions * 0.5;
+            const intensity = Math.min(total / 12, 1);
+            const colorClass =
+              intensity >= 0.8 ? "bg-emerald-500" :
+              intensity >= 0.6 ? "bg-emerald-300" :
+              intensity >= 0.4 ? "bg-amber-300" :
+              intensity >= 0.2 ? "bg-orange-300" : "bg-gray-100";
+            return (
+              <button
+                key={d.day}
+                onClick={() => setSelectedDay(d)}
+                className={`aspect-square rounded-lg ${colorClass} flex items-center justify-center hover:ring-2 hover:ring-orange-400 transition-all`}
+                title={`Jour ${d.day} — +${total.toFixed(1)} pts`}
+              >
+                <span className={`text-[10px] font-bold ${intensity >= 0.4 ? "text-white" : "text-gray-500"}`}>{d.day}</span>
+              </button>
+            );
+          })}
         </div>
         <div className="flex gap-4 mt-3 text-xs text-gray-400">
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-400 inline-block" /> Difficile</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-gray-100 inline-block border border-gray-200" /> Faible</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-300 inline-block" /> Moyen</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-300 inline-block" /> Bien</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500 inline-block" /> Excellent</span>
         </div>
       </div>
+
+      {/* Day detail modal */}
+      {selectedDay && <DayDetailModal day={selectedDay} onClose={() => setSelectedDay(null)} />}
     </div>
   );
 }
