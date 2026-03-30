@@ -37,7 +37,7 @@ const INITIAL_TASKS: FullTask[] = [
 
 type Tab = "all" | "objectifs" | "todos";
 type StatusFilter = "all" | "todo" | "in_progress" | "done";
-type SortBy = "importance" | "deadline" | "status";
+type SortBy = "recommended" | "importance" | "deadline" | "status";
 
 let nextId = 100;
 
@@ -46,7 +46,7 @@ export default function TachesPage() {
   const [activeTab, setActiveTab] = useState<Tab>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [importanceFilter, setImportanceFilter] = useState<number>(0);
-  const [sortBy, setSortBy] = useState<SortBy>("importance");
+  const [sortBy, setSortBy] = useState<SortBy>("recommended");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<FullTask | null>(null);
 
@@ -64,9 +64,28 @@ export default function TachesPage() {
   });
   if (statusFilter !== "all") filtered = filtered.filter((t) => t.status === statusFilter);
   if (importanceFilter > 0) filtered = filtered.filter((t) => t.importance >= importanceFilter);
+  function urgencyBonus(deadline?: string): number {
+    if (!deadline) return 5;
+    const now = new Date();
+    const due = new Date(deadline.split(" ").reverse().join("-"));
+    if (isNaN(due.getTime())) return 5;
+    const days = (due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+    if (days < 0) return 120;
+    if (days < 1) return 100;
+    if (days <= 2) return 80;
+    if (days <= 7) return 40;
+    return 10;
+  }
+  function taskScore(t: FullTask): number {
+    if (t.status === "done") return -1;
+    if (t.status === "in_progress") return 1000 + t.importance * 20 + urgencyBonus(t.deadline);
+    return t.importance * 20 + urgencyBonus(t.deadline);
+  }
+
   filtered = [...filtered].sort((a, b) => {
+    if (sortBy === "recommended") return taskScore(b) - taskScore(a);
     if (sortBy === "importance") return b.importance - a.importance;
-    if (sortBy === "status") return (["todo", "in_progress", "done"].indexOf(a.status)) - (["todo", "in_progress", "done"].indexOf(b.status));
+    if (sortBy === "status") return (["in_progress", "todo", "done"].indexOf(a.status)) - (["in_progress", "todo", "done"].indexOf(b.status));
     if (!a.deadline && !b.deadline) return 0;
     if (!a.deadline) return 1;
     if (!b.deadline) return -1;
@@ -161,6 +180,7 @@ export default function TachesPage() {
         <div className="flex items-center gap-2">
           <label className="text-xs font-medium text-gray-500">Trier par</label>
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)} className="text-sm bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-1 focus:ring-orange-400">
+            <option value="recommended">Recommandé</option>
             <option value="importance">Importance</option>
             <option value="deadline">Échéance</option>
             <option value="status">Statut</option>
