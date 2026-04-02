@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 
 const mainNav = [
   {
@@ -87,64 +86,39 @@ const bottomNav = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const [expanded, setExpanded] = useState(true);
 
   return (
     <aside
-      className={`fixed top-0 left-0 h-screen bg-white border-r border-gray-100 flex flex-col z-30 transition-all duration-200 ${
-        expanded ? "w-60" : "w-[68px]"
-      }`}
+      className="fixed top-0 left-0 h-screen flex flex-col z-30 w-60"
+      style={{ backgroundColor: "#07101B" }}
     >
-      {/* Logo area */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-gray-100 shrink-0">
+      {/* Logo */}
+      <div className="flex items-center gap-3 px-5 h-16 shrink-0" style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
         <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-amber-500 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm">
           A
         </div>
-        {expanded && (
-          <span className="text-lg font-bold text-gray-800 tracking-tight">
-            Agenda
-          </span>
-        )}
+        <span className="text-base font-bold text-white tracking-tight">Agenda</span>
       </div>
 
-      {/* Collapse toggle */}
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="mx-3 mt-3 mb-1 p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors self-end"
-        aria-label={expanded ? "Réduire le menu" : "Développer le menu"}
-      >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          {expanded ? (
-            <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-          ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-          )}
-        </svg>
-      </button>
-
       {/* Main navigation */}
-      <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 pt-4 space-y-0.5 overflow-y-auto">
         {mainNav.map((item) => {
-          const isActive =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
+          const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}
               href={item.href}
               className={isActive ? "nav-link-active" : "nav-link"}
-              title={!expanded ? item.label : undefined}
             >
               <span className="shrink-0">{item.icon}</span>
-              {expanded && <span>{item.label}</span>}
+              <span>{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
       {/* Bottom navigation */}
-      <div className="px-3 pb-4 space-y-1 border-t border-gray-100 pt-3">
+      <div className="px-3 pb-5 space-y-0.5" style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px" }}>
         {bottomNav.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (
@@ -152,10 +126,9 @@ export default function Sidebar() {
               key={item.href}
               href={item.href}
               className={isActive ? "nav-link-active" : "nav-link"}
-              title={!expanded ? item.label : undefined}
             >
               <span className="shrink-0">{item.icon}</span>
-              {expanded && <span>{item.label}</span>}
+              <span>{item.label}</span>
             </Link>
           );
         })}

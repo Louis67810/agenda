@@ -24,7 +24,7 @@ interface ObjectiveCardProps {
 }
 
 const statusConfig = {
-  active:    { label: "En cours",  bg: "bg-orange-100",  text: "text-orange-700" },
+  active:    { label: "En cours",  bg: "bg-amber-100",  text: "text-amber-700" },
   completed: { label: "Terminé",   bg: "bg-emerald-100", text: "text-emerald-700" },
   paused:    { label: "En pause",  bg: "bg-gray-100",    text: "text-gray-600" },
 };
@@ -53,7 +53,7 @@ export default function ObjectiveCard({ title, description, importance, progress
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden hover:shadow-md hover:border-gray-200 transition-all duration-200">
-      <div className={`h-1.5 ${color}`} />
+      
 
       <div className="p-5">
         {/* Header */}
@@ -127,7 +127,7 @@ export default function ObjectiveCard({ title, description, importance, progress
         {categories && categories.length > 0 && (
           <button
             onClick={() => setExpanded(!expanded)}
-            className="mt-3 w-full flex items-center justify-center gap-1.5 text-xs font-medium text-gray-400 hover:text-orange-500 transition-colors py-1"
+            className="mt-3 w-full flex items-center justify-center gap-1.5 text-xs font-medium text-gray-400 hover:text-blue-500 transition-colors py-1"
           >
             <span>{expanded ? "Masquer" : "Voir"} l&apos;arborescence</span>
             <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

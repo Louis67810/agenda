@@ -6,23 +6,19 @@ import PomodoroTimer from "@/components/pomodoro/PomodoroTimer";
 
 export const metadata: Metadata = {
   title: "Agenda — Organisation Personnelle",
-  description:
-    "Agenda intelligent, tâches, habitudes, objectifs et gamification",
+  description: "Agenda intelligent, tâches, habitudes, objectifs et gamification",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr" className="light">
-      <body className="bg-stone-50 text-gray-800 antialiased">
+      <body className="antialiased" style={{ backgroundColor: "#07101B" }}>
         <Sidebar />
-        {/* Main area offset by sidebar width */}
-        <div className="ml-60 min-h-screen flex flex-col transition-all duration-200">
-          <Header />
-          <main className="flex-1 p-8">{children}</main>
+        <div className="ml-60 min-h-screen p-3">
+          <div className="bg-white rounded-2xl min-h-[calc(100vh-1.5rem)] flex flex-col overflow-hidden">
+            <Header />
+            <main className="flex-1 p-8">{children}</main>
+          </div>
         </div>
         <PomodoroTimer />
       </body>
