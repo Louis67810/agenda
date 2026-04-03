@@ -34,7 +34,7 @@ export default function Header() {
 
         {/* User avatar */}
         <button className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white font-semibold text-sm">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm">
             U
           </div>
           <span className="text-sm font-medium text-gray-700 hidden sm:block">Utilisateur</span>

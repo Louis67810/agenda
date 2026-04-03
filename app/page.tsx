@@ -75,7 +75,7 @@ export default function HomePage() {
         <div className="lg:col-span-2 card">
           <div className="flex items-center justify-between mb-5">
             <h3 className="section-title text-gray-900">Tâches du jour</h3>
-            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-orange-100 text-orange-600">
+            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-600">
               {tasksLeft} restante{tasksLeft > 1 ? "s" : ""}
             </span>
           </div>
@@ -141,7 +141,7 @@ export default function HomePage() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-500">Streak max</span>
-                <span className="text-sm font-bold text-orange-500">15 jours 🔥</span>
+                <span className="text-sm font-bold text-blue-500">15 jours 🔥</span>
               </div>
             </div>
           </div>
@@ -181,7 +181,7 @@ export default function HomePage() {
                   {habit.name}
                 </span>
                 <span className="text-xs text-gray-400">{habit.streak}j</span>
-                <span className="text-orange-400">🔥</span>
+                <span className="text-blue-400">🔥</span>
               </div>
             ))}
           </div>

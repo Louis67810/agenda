@@ -31,7 +31,7 @@ const statusConfig = {
 
 const taskStatusDot: Record<string, string> = {
   todo: "bg-gray-300",
-  in_progress: "bg-orange-400",
+  in_progress: "bg-blue-400",
   done: "bg-emerald-500",
 };
 
@@ -174,14 +174,14 @@ export default function ObjectiveCard({ title, description, importance, progress
                                 >
                                   <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
                                     task.status === "done" ? "bg-emerald-500 border-emerald-500" :
-                                    task.status === "in_progress" ? "border-orange-400" : "border-gray-300 group-hover:border-orange-300"
+                                    task.status === "in_progress" ? "border-blue-400" : "border-gray-300 group-hover:border-blue-300"
                                   }`}>
                                     {task.status === "done" && (
                                       <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                       </svg>
                                     )}
-                                    {task.status === "in_progress" && <div className="w-1.5 h-1.5 rounded-full bg-orange-400" />}
+                                    {task.status === "in_progress" && <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />}
                                   </div>
                                   <span className={`text-[11px] ${task.status === "done" ? "text-gray-400 line-through" : "text-gray-600"}`}>
                                     {task.title}

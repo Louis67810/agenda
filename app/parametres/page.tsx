@@ -59,7 +59,7 @@ export default function ParametresPage() {
           <Link
             key={s.href}
             href={s.href}
-            className="card flex items-center gap-4 hover:border-orange-200 hover:shadow-sm transition-all cursor-pointer block"
+            className="card flex items-center gap-4 hover:border-blue-200 hover:shadow-sm transition-all cursor-pointer block"
           >
             <span className="text-2xl">{s.icon}</span>
             <div className="flex-1">
@@ -80,19 +80,19 @@ export default function ParametresPage() {
           <p className="text-xs text-gray-400 mt-1">Configure comment les points sont calculés chaque jour</p>
         </div>
 
-        <div className="bg-orange-50 rounded-xl p-4 space-y-3 border border-orange-100">
-          <p className="text-xs font-semibold text-orange-700 uppercase tracking-wide">Règles de calcul</p>
+        <div className="bg-blue-50 rounded-xl p-4 space-y-3 border border-blue-100">
+          <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">Règles de calcul</p>
           <ul className="text-xs text-gray-600 space-y-1.5">
             <li className="flex items-start gap-2">
-              <span className="text-orange-500 mt-0.5">●</span>
+              <span className="text-blue-500 mt-0.5">●</span>
               <span><strong>Tâches :</strong> toutes les tâches du jour = <strong>{tasksTotalPoints} points</strong> au total, proportionnels au % réalisé</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-orange-500 mt-0.5">●</span>
+              <span className="text-blue-500 mt-0.5">●</span>
               <span><strong>Habitudes :</strong> chaque habitude accomplie = <strong>1 point</strong></span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-orange-500 mt-0.5">●</span>
+              <span className="text-blue-500 mt-0.5">●</span>
               <span><strong>Pomodoro :</strong> chaque session complète = <strong>0.5 point</strong></span>
             </li>
           </ul>
@@ -110,9 +110,9 @@ export default function ParametresPage() {
                 max={20}
                 value={tasksTotalPoints}
                 onChange={(e) => setTasksTotalPoints(Number(e.target.value))}
-                className="flex-1 accent-orange-500"
+                className="flex-1 accent-blue-500"
               />
-              <span className="text-lg font-extrabold text-orange-500 w-8 text-right">{tasksTotalPoints}</span>
+              <span className="text-lg font-extrabold text-blue-500 w-8 text-right">{tasksTotalPoints}</span>
             </div>
             <p className="text-xs text-gray-400 mt-1">Points si 100% des tâches sont faites</p>
           </div>
@@ -128,8 +128,8 @@ export default function ParametresPage() {
                   onClick={() => setPomoDurationMin(min)}
                   className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-all ${
                     pomoDurationMin === min
-                      ? "bg-orange-500 text-white border-orange-500"
-                      : "bg-white text-gray-600 border-gray-200 hover:border-orange-300"
+                      ? "bg-blue-500 text-white border-blue-500"
+                      : "bg-white text-gray-600 border-gray-200 hover:border-blue-300"
                   }`}
                 >
                   {min} min
@@ -161,7 +161,7 @@ export default function ParametresPage() {
                   <button
                     onClick={() => updateDay(i, { enabled: !day.enabled })}
                     className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${
-                      day.enabled ? "bg-orange-500" : "bg-gray-300"
+                      day.enabled ? "bg-blue-500" : "bg-gray-300"
                     }`}
                   >
                     <span
@@ -179,14 +179,14 @@ export default function ParametresPage() {
                         type="time"
                         value={day.start}
                         onChange={(e) => updateDay(i, { start: e.target.value })}
-                        className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-orange-300"
+                        className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-blue-300"
                       />
                       <span className="text-gray-300 text-xs">→</span>
                       <input
                         type="time"
                         value={day.end}
                         onChange={(e) => updateDay(i, { end: e.target.value })}
-                        className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-orange-300"
+                        className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-blue-300"
                       />
                     </div>
                   ) : (
@@ -208,7 +208,7 @@ export default function ParametresPage() {
             type="time"
             value={recapTime}
             onChange={(e) => setRecapTime(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-orange-300"
+            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-blue-300"
           />
           <p className="text-xs text-gray-400 mt-1">Tu seras notifié à cette heure pour remplir ton récap de journée</p>
         </div>

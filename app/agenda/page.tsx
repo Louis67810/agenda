@@ -166,17 +166,40 @@ const CATS: {key: TaskCategory; label: string}[] = [
   {key:"personnel",label:"Personnel"},{key:"social",label:"Social"},{key:"finance",label:"Finance"},
 ];
 
-function QuickAddModal({ date, onClose, onAdd }: { date: string; onClose: () => void; onAdd: (t: Task) => void }) {
+function QuickAddModal({ date, onClose, onAdd, existingTasks }: { date: string; onClose: () => void; onAdd: (t: Task) => void; existingTasks?: Task[] }) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<TaskCategory>("travail");
   const [startTime, setStartTime] = useState("09:00");
   const [duration, setDuration] = useState(60);
+  const [overlapError, setOverlapError] = useState("");
+
+  function hasOverlap(newStart: string, newEnd: string): boolean {
+    const newS = toMin(newStart), newE = toMin(newEnd);
+    // Check against existing tasks on the same date
+    const dateTasks = (existingTasks || []).filter(t => t.date === date);
+    for (const t of dateTasks) {
+      if (newS < toMin(t.endTime) && newE > toMin(t.startTime)) return true;
+    }
+    // Check against blocked slots for this day of week
+    const [y, m, d] = date.split("-").map(Number);
+    const dow = new Date(y, m - 1, d).getDay();
+    const dayBlocked = blockedSlots.filter(b => b.dayOfWeek === dow);
+    for (const b of dayBlocked) {
+      if (newS < toMin(b.endTime) && newE > toMin(b.startTime)) return true;
+    }
+    return false;
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
     const endMin = toMin(startTime)+duration;
     const endTime = `${String(Math.floor(endMin/60)).padStart(2,"0")}:${String(endMin%60).padStart(2,"0")}`;
+    if (hasOverlap(startTime, endTime)) {
+      setOverlapError("Ce créneau est déjà occupé. Choisissez un autre horaire.");
+      return;
+    }
+    setOverlapError("");
     onAdd({ id:`quick-${Date.now()}`, title, date, startTime, endTime, category, importance:"medium", status:"todo" });
     onClose();
   }
@@ -218,6 +241,9 @@ function QuickAddModal({ date, onClose, onAdd }: { date: string; onClose: () => 
               );
             })}
           </div>
+          {overlapError && (
+            <p className="text-xs text-red-500 font-medium -mt-1">{overlapError}</p>
+          )}
           <div className="flex gap-3 pt-1">
             <button type="button" onClick={onClose} className="btn-ghost flex-1">Annuler</button>
             <button type="submit" className="btn-primary flex-1">Ajouter</button>
@@ -231,8 +257,6 @@ function QuickAddModal({ date, onClose, onAdd }: { date: string; onClose: () => 
 // ─── Weekly View ──────────────────────────────────────────────────────────────
 const H_START=7, H_END=22, SLOT_H=60;
 const TOTAL_H=(H_END-H_START)*SLOT_H, TOTAL_MIN=(H_END-H_START)*60;
-
-const DIAGONAL_BG = "repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(0,0,0,0.025) 8px, rgba(0,0,0,0.026) 9px)";
 
 function WeeklyView({ year, month, day, taskMap, onTaskClick, onDayClick }: {
   year: number; month: number; day: number;
@@ -292,15 +316,13 @@ function WeeklyView({ year, month, day, taskMap, onTaskClick, onDayClick }: {
             const ds=dateStr(date), isToday=ds===today;
             const dayTasks=taskMap[ds]||[];
             const blocked=blockedByDow[date.getDay()]||[];
-            const hasContent = dayTasks.length > 0 || blocked.length > 0;
             return (
               <div
                 key={ci}
                 className="relative border-r border-gray-100 last:border-r-0 cursor-pointer"
                 style={{
                   height:`${TOTAL_H}px`,
-                  backgroundImage: hasContent ? undefined : DIAGONAL_BG,
-                  backgroundColor: isToday ? "rgba(59,130,246,0.03)" : undefined,
+                  backgroundColor: isToday ? "rgba(59,130,246,0.04)" : "#F8FAFC",
                 }}
                 onClick={()=>onDayClick(ds)}
               >
@@ -358,6 +380,7 @@ export default function AgendaPage() {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
+  const [day, setDay] = useState(now.getDate());
   const [allTasks, setAllTasks] = useState<Task[]>(INITIAL_TASKS);
   const [selectedTask, setSelectedTask] = useState<Task|null>(null);
   const [quickAddDate, setQuickAddDate] = useState<string|null>(null);
@@ -371,16 +394,16 @@ export default function AgendaPage() {
   },[allTasks]);
 
   function goPrevWeek() {
-    const d = new Date(year, month, 1);
+    const d = new Date(year, month, day);
     d.setDate(d.getDate() - 7);
-    setYear(d.getFullYear()); setMonth(d.getMonth());
+    setYear(d.getFullYear()); setMonth(d.getMonth()); setDay(d.getDate());
   }
   function goNextWeek() {
-    const d = new Date(year, month, 1);
+    const d = new Date(year, month, day);
     d.setDate(d.getDate() + 7);
-    setYear(d.getFullYear()); setMonth(d.getMonth());
+    setYear(d.getFullYear()); setMonth(d.getMonth()); setDay(d.getDate());
   }
-  function goToday() { setYear(now.getFullYear()); setMonth(now.getMonth()); }
+  function goToday() { setYear(now.getFullYear()); setMonth(now.getMonth()); setDay(now.getDate()); }
 
   function toggleDone(id: string) {
     setAllTasks(prev=>prev.map(t=>t.id===id?{...t,status:t.status==="done"?"todo":"done"}:t));
@@ -434,7 +457,7 @@ export default function AgendaPage() {
 
       {/* Calendar */}
       <WeeklyView
-        year={year} month={month} day={now.getDate()}
+        year={year} month={month} day={day}
         taskMap={taskMap}
         onTaskClick={setSelectedTask}
         onDayClick={setQuickAddDate}
@@ -449,7 +472,7 @@ export default function AgendaPage() {
           onAddTime={handleAddTime}
         />
       )}
-      {quickAddDate && <QuickAddModal date={quickAddDate} onClose={()=>setQuickAddDate(null)} onAdd={handleAddTask}/>}
+      {quickAddDate && <QuickAddModal date={quickAddDate} onClose={()=>setQuickAddDate(null)} onAdd={handleAddTask} existingTasks={allTasks}/>}
     </div>
   );
 }

@@ -21,12 +21,12 @@ export default function CompteSettingsPage() {
       <div className="card space-y-5">
         {/* Avatar */}
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white text-2xl font-bold">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold">
             {name.charAt(0).toUpperCase()}
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-800">{name}</p>
-            <button className="text-xs text-orange-500 hover:text-orange-600 mt-0.5">Changer la photo</button>
+            <button className="text-xs text-blue-500 hover:text-blue-600 mt-0.5">Changer la photo</button>
           </div>
         </div>
 
@@ -36,7 +36,7 @@ export default function CompteSettingsPage() {
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-300"
+            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-300"
           />
         </div>
 

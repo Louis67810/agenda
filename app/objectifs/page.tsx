@@ -187,7 +187,7 @@ export default function ObjectifsPage() {
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <label className="text-xs font-medium text-gray-500">Statut</label>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as StatusFilter)} className="text-sm bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-1 focus:ring-orange-400">
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as StatusFilter)} className="text-sm bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-400">
             <option value="all">Tous</option>
             <option value="active">En cours</option>
             <option value="completed">Terminés</option>
@@ -222,24 +222,24 @@ export default function ObjectifsPage() {
         <form onSubmit={handleSave} className="space-y-4">
           <div>
             <label className="text-xs font-medium text-gray-500 block mb-1.5">Titre *</label>
-            <input autoFocus type="text" value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="Ex: Finir mon portfolio..." className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400" required />
+            <input autoFocus type="text" value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="Ex: Finir mon portfolio..." className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400" required />
           </div>
 
           <div>
             <label className="text-xs font-medium text-gray-500 block mb-1.5">Description</label>
-            <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Décris cet objectif..." className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400 resize-none h-20" />
+            <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Décris cet objectif..." className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400 resize-none h-20" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-gray-500 block mb-1.5">Catégorie</label>
-              <select value={form.categoryKey} onChange={(e) => setForm((p) => ({ ...p, categoryKey: e.target.value as TaskCategory }))} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400">
+              <select value={form.categoryKey} onChange={(e) => setForm((p) => ({ ...p, categoryKey: e.target.value as TaskCategory }))} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400">
                 {CATS.map((c) => <option key={c.key} value={c.key}>{c.label}</option>)}
               </select>
             </div>
             <div>
               <label className="text-xs font-medium text-gray-500 block mb-1.5">Statut</label>
-              <select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as Objective["status"] }))} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400">
+              <select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as Objective["status"] }))} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400">
                 <option value="active">En cours</option>
                 <option value="paused">En pause</option>
                 <option value="completed">Terminé</option>
@@ -263,7 +263,7 @@ export default function ObjectifsPage() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-gray-500 block mb-1.5">Deadline</label>
-              <input type="date" value={form.deadline} onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400" />
+              <input type="date" value={form.deadline} onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
             </div>
             <div>
               <label className="text-xs font-medium text-gray-500 block mb-1.5">Couleur</label>

@@ -10,6 +10,7 @@ export default function PointsSettingsPage() {
     penaltyDuration: 8,
     bonusMultiplier: 1.5,
     bonusDayScore: 5,
+    pomodoroPoints: 0,
   });
   const [saved, setSaved] = useState(false);
 
@@ -23,8 +24,9 @@ export default function PointsSettingsPage() {
   }
 
   const fields = [
-    { key: "taskBase" as const, label: "Points par étoile d'importance (tâche)", unit: "pts/⭐", desc: "Multiplié par l'importance (1-5)" },
+    { key: "taskBase" as const, label: "Points par étoile d'importance (tâche)", unit: "pts/★", desc: "Multiplié par l'importance (1-5)" },
     { key: "habitBase" as const, label: "Points par habitude accomplie", unit: "pts", desc: "Par habitude cochée dans le récap" },
+    { key: "pomodoroPoints" as const, label: "Points par session Pomodoro", unit: "pts", desc: "Points gagnés à chaque session Pomodoro terminée (0 par défaut)" },
     { key: "penaltyMissed" as const, label: "Pénalité tâche ratée", unit: "pts", desc: "Soustrait si une tâche est marquée 'ratée'" },
     { key: "penaltyDuration" as const, label: "Pénalité durée non justifiée", unit: "pts", desc: "Si tu augmentes une durée sans bonne raison" },
     { key: "bonusMultiplier" as const, label: "Multiplicateur objectif complété", unit: "×", desc: "Multiplicateur sur les points quand un objectif est fini à 100%" },
@@ -39,11 +41,12 @@ export default function PointsSettingsPage() {
       </div>
 
       {/* Preview */}
-      <div className="card bg-gradient-to-br from-orange-500 to-amber-500 border-none text-white">
-        <p className="text-sm font-medium text-orange-100 mb-2">Exemple de calcul</p>
-        <p className="text-xs text-orange-100">
-          Tâche importance 3 ⭐ → <strong>{config.taskBase * 3} pts</strong> •
-          Tâche importance 5 ⭐ → <strong>{config.taskBase * 5} pts</strong> •
+      <div className="card bg-gradient-to-br from-blue-500 to-blue-600 border-none text-white">
+        <p className="text-sm font-medium text-blue-100 mb-2">Exemple de calcul</p>
+        <p className="text-xs text-blue-100">
+          Tâche importance 3 → <strong>{config.taskBase * 3} pts</strong> ·
+          Tâche importance 5 → <strong>{config.taskBase * 5} pts</strong> ·
+          Pomodoro → <strong>+{config.pomodoroPoints} pts</strong> ·
           Tâche ratée → <strong>-{config.penaltyMissed} pts</strong>
         </p>
       </div>
@@ -62,14 +65,14 @@ export default function PointsSettingsPage() {
               onChange={(e) => update(f.key, e.target.value)}
               min={0}
               step={f.key === "bonusMultiplier" ? 0.1 : 1}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-300"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-300"
             />
             <p className="text-xs text-gray-400 mt-1">{f.desc}</p>
           </div>
         ))}
 
         <button onClick={handleSave} className={`btn-primary w-full ${saved ? "!bg-emerald-500" : ""}`}>
-          {saved ? "✓ Sauvegardé" : "Sauvegarder les paramètres"}
+          {saved ? "Sauvegardé" : "Sauvegarder les paramètres"}
         </button>
       </div>
     </div>

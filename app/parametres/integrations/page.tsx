@@ -61,7 +61,7 @@ export default function IntegrationsPage() {
       {/* École Directe */}
       <div className="card space-y-4">
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-xl">🎓</div>
+          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-xl">🎓</div>
           <div className="flex-1">
             <div className="flex items-center justify-between">
               <div>
@@ -82,12 +82,12 @@ export default function IntegrationsPage() {
             <input
               type="text"
               placeholder="Identifiant École Directe"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-300"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-300"
             />
             <input
               type="password"
               placeholder="Mot de passe"
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-300"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-300"
             />
             <button
               onClick={() => setEcoleConnected(true)}
