@@ -135,7 +135,7 @@ export default function TodoPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-            className="text-sm bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
+            className="text-sm bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
           >
             <option value="all">Tous</option>
             <option value="todo">A faire</option>
@@ -151,7 +151,7 @@ export default function TodoPage() {
       <div>
         <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
           <div
-            className="h-full rounded-full bg-orange-500 transition-all duration-500 ease-out"
+            className="h-full rounded-full bg-blue-500 transition-all duration-500 ease-out"
             style={{
               width: `${totalCount > 0 ? (doneCount / totalCount) * 100 : 0}%`,
             }}

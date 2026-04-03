@@ -79,7 +79,7 @@ export default function HabitudesPage() {
         </div>
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -95,11 +95,11 @@ export default function HabitudesPage() {
           <p className="text-xs text-gray-500 mt-0.5">Complétées aujourd&apos;hui</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-4 text-center">
-          <p className="text-2xl font-bold text-orange-600">🔥 {bestStreak}</p>
+          <p className="text-2xl font-bold text-blue-600">🔥 {bestStreak}</p>
           <p className="text-xs text-gray-500 mt-0.5">Meilleure série</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-4 text-center">
-          <p className="text-2xl font-bold text-amber-600">+{totalPoints}</p>
+          <p className="text-2xl font-bold text-blue-600">+{totalPoints}</p>
           <p className="text-xs text-gray-500 mt-0.5">Points gagnés</p>
         </div>
       </div>
@@ -152,7 +152,7 @@ export default function HabitudesPage() {
                     key={ic}
                     onClick={() => setForm((f) => ({ ...f, icon: ic }))}
                     className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all ${
-                      form.icon === ic ? "bg-orange-100 ring-2 ring-orange-400" : "bg-gray-100 hover:bg-gray-200"
+                      form.icon === ic ? "bg-blue-100 ring-2 ring-blue-400" : "bg-gray-100 hover:bg-gray-200"
                     }`}
                   >
                     {ic}
@@ -170,7 +170,7 @@ export default function HabitudesPage() {
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
                 placeholder="Ex : Lire 30 min"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-300"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-300"
               />
             </div>
 
@@ -181,7 +181,7 @@ export default function HabitudesPage() {
                 <select
                   value={form.frequency}
                   onChange={(e) => setForm((f) => ({ ...f, frequency: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-300"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-300"
                 >
                   {FREQUENCIES.map((fr) => <option key={fr}>{fr}</option>)}
                 </select>
@@ -194,7 +194,7 @@ export default function HabitudesPage() {
                   max={100}
                   value={form.points}
                   onChange={(e) => setForm((f) => ({ ...f, points: Number(e.target.value) }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-300"
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-300"
                 />
               </div>
             </div>
@@ -209,14 +209,14 @@ export default function HabitudesPage() {
                   value={form.targetValue}
                   onChange={(e) => setForm((f) => ({ ...f, targetValue: e.target.value }))}
                   placeholder="Ex : 10000"
-                  className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-300"
+                  className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-300"
                 />
                 <input
                   type="text"
                   value={form.unit}
                   onChange={(e) => setForm((f) => ({ ...f, unit: e.target.value }))}
                   placeholder="unité"
-                  className="w-24 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-300"
+                  className="w-24 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-300"
                 />
               </div>
             </div>
@@ -228,7 +228,7 @@ export default function HabitudesPage() {
               <button
                 onClick={handleCreate}
                 disabled={!form.title.trim()}
-                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Créer
               </button>

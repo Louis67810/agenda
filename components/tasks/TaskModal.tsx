@@ -90,7 +90,7 @@ export default function TaskModal({ open, onClose, onSave, initial, mode = "crea
             value={form.title}
             onChange={(e) => set("title", e.target.value)}
             placeholder={parentTitle ? "Titre de la sous-tâche..." : "Ex: Préparer la présentation..."}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-200"
+            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-200"
             required
           />
         </div>
@@ -106,7 +106,7 @@ export default function TaskModal({ open, onClose, onSave, initial, mode = "crea
               set("categoryKey", key);
               set("category", cat?.label ?? key);
             }}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
           >
             {CATEGORIES.map((c) => (
               <option key={c.key} value={c.key}>{c.label}</option>
@@ -137,7 +137,7 @@ export default function TaskModal({ open, onClose, onSave, initial, mode = "crea
             <select
               value={form.duration}
               onChange={(e) => set("duration", e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
             >
               {["15min", "30min", "45min", "1h", "1h30", "2h", "2h30", "3h", "4h", "+4h"].map((d) => (
                 <option key={d} value={d}>{d}</option>
@@ -151,7 +151,7 @@ export default function TaskModal({ open, onClose, onSave, initial, mode = "crea
             <select
               value={form.status}
               onChange={(e) => set("status", e.target.value as TaskCardStatus)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
             >
               <option value="todo">À faire</option>
               <option value="in_progress">En cours</option>
@@ -168,7 +168,7 @@ export default function TaskModal({ open, onClose, onSave, initial, mode = "crea
               type="date"
               value={form.scheduledDate ?? ""}
               onChange={(e) => set("scheduledDate", e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
             />
           </div>
           <div>
@@ -177,7 +177,7 @@ export default function TaskModal({ open, onClose, onSave, initial, mode = "crea
               type="date"
               value={form.deadline}
               onChange={(e) => set("deadline", e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
             />
           </div>
         </div>
@@ -188,7 +188,7 @@ export default function TaskModal({ open, onClose, onSave, initial, mode = "crea
             <label className="flex items-center gap-3 cursor-pointer">
               <div
                 onClick={() => set("recurring", !form.recurring)}
-                className={`w-10 h-5 rounded-full transition-colors relative shrink-0 ${form.recurring ? "bg-orange-500" : "bg-gray-200"}`}
+                className={`w-10 h-5 rounded-full transition-colors relative shrink-0 ${form.recurring ? "bg-blue-500" : "bg-gray-200"}`}
               >
                 <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.recurring ? "translate-x-5" : "translate-x-0.5"}`} />
               </div>
@@ -196,13 +196,13 @@ export default function TaskModal({ open, onClose, onSave, initial, mode = "crea
             </label>
 
             {form.recurring && (
-              <div className="pl-13 grid grid-cols-2 gap-3 ml-1 border-l-2 border-orange-200 pl-4">
+              <div className="pl-13 grid grid-cols-2 gap-3 ml-1 border-l-2 border-blue-200 pl-4">
                 <div>
                   <label className="text-xs font-medium text-gray-500 block mb-1.5">Jour de la semaine</label>
                   <select
                     value={form.recurringDayOfWeek ?? 1}
                     onChange={(e) => set("recurringDayOfWeek", Number(e.target.value))}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
                   >
                     {DAYS_FR.map((d, i) => <option key={i} value={i}>{d}</option>)}
                   </select>
@@ -213,7 +213,7 @@ export default function TaskModal({ open, onClose, onSave, initial, mode = "crea
                     type="time"
                     value={form.recurringTime ?? "09:00"}
                     onChange={(e) => set("recurringTime", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-400"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
                   />
                 </div>
               </div>
@@ -226,7 +226,7 @@ export default function TaskModal({ open, onClose, onSave, initial, mode = "crea
           <label className="flex items-center gap-3 cursor-pointer">
             <div
               onClick={() => set("isSimpleTodo", !form.isSimpleTodo)}
-              className={`w-10 h-5 rounded-full transition-colors relative shrink-0 ${form.isSimpleTodo ? "bg-orange-500" : "bg-gray-200"}`}
+              className={`w-10 h-5 rounded-full transition-colors relative shrink-0 ${form.isSimpleTodo ? "bg-blue-500" : "bg-gray-200"}`}
             >
               <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.isSimpleTodo ? "translate-x-5" : "translate-x-0.5"}`} />
             </div>

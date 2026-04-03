@@ -46,8 +46,8 @@ export default function HabitRow({
           onClick={onToggle}
           className={`w-7 h-7 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all duration-200 ${
             done
-              ? "bg-orange-500 border-orange-500 text-white"
-              : "border-gray-300 hover:border-orange-400"
+              ? "bg-blue-500 border-blue-500 text-white"
+              : "border-gray-300 hover:border-blue-400"
           }`}
         >
           {done && (
@@ -71,11 +71,11 @@ export default function HabitRow({
               {frequency}
             </span>
             {streak > 0 && (
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-orange-600">
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600">
                 🔥 {streak} jour{streak > 1 ? "s" : ""}
               </span>
             )}
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600">
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-500">
               +{points} pts
             </span>
           </div>
@@ -88,7 +88,7 @@ export default function HabitRow({
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-orange-400 to-amber-500"
+                  className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-blue-400 to-blue-500"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>

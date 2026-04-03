@@ -5,11 +5,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @layer base {
-  :root {
-    --accent: 245 124 0;
-    --accent-light: 255 237 213;
-  }
-
   html {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -17,44 +12,42 @@
   }
 
   body {
-    @apply bg-stone-50 text-gray-800;
-  }
-
-  * {
-    @apply border-gray-200;
+    background-color: #07101B;
+    color: #1f2937;
   }
 }
 
 @layer components {
-  /* Cards */
   .card {
-    @apply bg-white rounded-2xl border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-5;
+    @apply bg-white rounded-2xl border border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.06)] p-5;
   }
 
   .card-hover {
-    @apply card transition-all duration-200 hover:shadow-md hover:border-gray-150;
+    @apply card transition-all duration-200 hover:shadow-md hover:border-gray-200;
   }
 
-  /* Buttons */
   .btn-primary {
-    @apply bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-medium px-4 py-2 rounded-xl transition-colors duration-150 shadow-sm;
+    @apply bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-medium px-4 py-2 rounded-xl transition-colors duration-150 shadow-sm;
   }
 
   .btn-secondary {
-    @apply bg-orange-50 hover:bg-orange-100 text-orange-600 font-medium px-4 py-2 rounded-xl transition-colors duration-150;
+    @apply bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium px-4 py-2 rounded-xl transition-colors duration-150;
   }
 
   .btn-ghost {
     @apply text-gray-500 hover:text-gray-700 hover:bg-gray-100 font-medium px-3 py-2 rounded-xl transition-colors duration-150;
   }
 
-  /* Badges */
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
   }
 
   .badge-orange {
     @apply badge bg-orange-100 text-orange-700;
+  }
+
+  .badge-blue {
+    @apply badge bg-blue-100 text-blue-700;
   }
 
   .badge-green {
@@ -65,11 +58,6 @@
     @apply badge bg-gray-100 text-gray-600;
   }
 
-  .badge-blue {
-    @apply badge bg-blue-100 text-blue-700;
-  }
-
-  /* Progress */
   .progress-bar {
     @apply w-full bg-gray-100 rounded-full h-2 overflow-hidden;
   }
@@ -78,70 +66,39 @@
     @apply h-full rounded-full transition-all duration-500 ease-out;
   }
 
-  /* Navigation */
   .nav-link {
-    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-50 transition-all duration-150 text-sm font-medium;
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-150 text-sm font-medium;
   }
 
   .nav-link-active {
-    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl bg-orange-50 text-orange-600 font-semibold text-sm;
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/10 text-white font-semibold text-sm;
   }
 
-  /* Checkbox circle */
   .check-circle {
     @apply w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors duration-150 cursor-pointer;
   }
 
   .check-circle-done {
-    @apply check-circle bg-orange-500 border-orange-500;
+    @apply check-circle bg-blue-500 border-blue-500;
   }
 
   .check-circle-pending {
-    @apply check-circle border-gray-300 hover:border-orange-400;
+    @apply check-circle border-gray-300 hover:border-blue-400;
   }
 
-  /* Checkbox square */
   .check-box {
     @apply w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors duration-150 cursor-pointer;
   }
 
   .check-box-done {
-    @apply check-box bg-orange-500 border-orange-500;
+    @apply check-box bg-blue-500 border-blue-500;
   }
 
   .check-box-pending {
-    @apply check-box border-gray-300 hover:border-orange-400;
+    @apply check-box border-gray-300 hover:border-blue-400;
   }
 
-  /* Section heading */
   .section-title {
     @apply font-semibold text-gray-800 text-base;
   }
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-gray-200 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-300;
-}
-
-/* Smooth transitions */
-* {
-  scroll-behavior: smooth;
-}
-
-/* Focus ring */
-*:focus-visible {
-  @apply outline-none ring-2 ring-orange-400 ring-offset-2 rounded-lg;
 }

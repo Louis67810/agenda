@@ -74,7 +74,7 @@ export default function RecapPage() {
     return (
       <div className="max-w-2xl mx-auto">
         <div className="card text-center space-y-6 py-12">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center mx-auto shadow-lg">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto shadow-lg">
             <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
@@ -84,9 +84,9 @@ export default function RecapPage() {
             <p className="text-gray-400 text-sm mt-2">Belle journée. Continue comme ça !</p>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            <div className="bg-orange-50 rounded-xl p-4 border border-orange-100">
-              <p className="text-xs text-orange-600 font-semibold mb-1">Tâches</p>
-              <p className="text-2xl font-bold text-orange-600">+{taskPoints}</p>
+            <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+              <p className="text-xs text-blue-600 font-semibold mb-1">Tâches</p>
+              <p className="text-2xl font-bold text-blue-600">+{taskPoints}</p>
               <p className="text-[10px] text-gray-400">{doneTasksCount}/{todayTasks.length} faites</p>
             </div>
             <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
@@ -102,10 +102,10 @@ export default function RecapPage() {
               </p>
             </div>
           </div>
-          <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-100">
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-100">
             <p className="text-xs text-gray-400 mb-1">Score total</p>
             <div className="flex items-end gap-2 justify-center">
-              <span className="text-5xl font-extrabold text-orange-500">
+              <span className="text-5xl font-extrabold text-blue-500">
                 {(totalBase + netPoints).toFixed(1).replace(".0", "")}
               </span>
               <span className="text-gray-400 mb-1">pts</span>
@@ -149,7 +149,7 @@ export default function RecapPage() {
                 i + 1 < step
                   ? "bg-emerald-500 text-white cursor-pointer hover:bg-emerald-600"
                   : i + 1 === step
-                  ? "bg-orange-500 text-white"
+                  ? "bg-blue-500 text-white"
                   : "bg-gray-100 text-gray-400 cursor-default"
               }`}
             >
@@ -173,7 +173,7 @@ export default function RecapPage() {
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-400">Points tâches</p>
-              <p className="text-lg font-bold text-orange-500">+{taskPoints}</p>
+              <p className="text-lg font-bold text-blue-500">+{taskPoints}</p>
               <p className="text-[10px] text-gray-400">/{TASKS_TOTAL_POINTS} max</p>
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function RecapPage() {
                   <p className="text-xs text-gray-400 mt-0.5">{task.time}</p>
                 </div>
                 {task.durationIncreased && (
-                  <span className="badge-orange text-[10px]">+{task.addedMinutes} min</span>
+                  <span className="badge-blue text-[10px]">+{task.addedMinutes} min</span>
                 )}
               </div>
               <div className="flex gap-2">
@@ -214,7 +214,7 @@ export default function RecapPage() {
                     value={justifications[task.id] || ""}
                     onChange={(e) => setJustifications((p) => ({ ...p, [task.id]: e.target.value }))}
                     placeholder="Explique brièvement..."
-                    className="w-full text-xs border border-gray-200 rounded-lg p-2 resize-none h-16 focus:outline-none focus:border-orange-300"
+                    className="w-full text-xs border border-gray-200 rounded-lg p-2 resize-none h-16 focus:outline-none focus:border-blue-300"
                   />
                   <div className="flex gap-2">
                     <button
@@ -259,7 +259,7 @@ export default function RecapPage() {
               }`}
               onClick={() => setHabitDone((p) => ({ ...p, [h.id]: !p[h.id] }))}
             >
-              <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${habitDone[h.id] ? "bg-orange-500 border-orange-500" : "border-gray-300"}`}>
+              <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${habitDone[h.id] ? "bg-blue-500 border-blue-500" : "border-gray-300"}`}>
                 {habitDone[h.id] && (
                   <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -278,7 +278,7 @@ export default function RecapPage() {
                     value={habitValues[h.id] || ""}
                     onChange={(e) => setHabitValues((p) => ({ ...p, [h.id]: e.target.value }))}
                     placeholder="0"
-                    className="w-20 text-xs border border-gray-200 rounded-lg p-1.5 text-center focus:outline-none focus:border-orange-300"
+                    className="w-20 text-xs border border-gray-200 rounded-lg p-1.5 text-center focus:outline-none focus:border-blue-300"
                   />
                   <span className="text-xs text-gray-400">{h.unit}</span>
                 </div>
@@ -297,12 +297,12 @@ export default function RecapPage() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <p className="text-sm font-medium text-gray-700">Note de la journée</p>
-                <span className="text-2xl font-extrabold text-orange-500">{dayScore}/10</span>
+                <span className="text-2xl font-extrabold text-blue-500">{dayScore}/10</span>
               </div>
               <input
                 type="range" min={1} max={10} value={dayScore}
                 onChange={(e) => setDayScore(Number(e.target.value))}
-                className="w-full accent-orange-500"
+                className="w-full accent-blue-500"
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1">
                 <span>Horrible</span><span>Excellent</span>
@@ -317,7 +317,7 @@ export default function RecapPage() {
                     key={m.value}
                     onClick={() => setMood(m.value)}
                     className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-xl border transition-all ${
-                      mood === m.value ? "border-orange-400 bg-orange-50" : "border-gray-200 hover:border-gray-300"
+                      mood === m.value ? "border-orange-400 bg-blue-50" : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
                     <span className="text-2xl">{m.emoji}</span>
@@ -333,7 +333,7 @@ export default function RecapPage() {
                 value={moodNote}
                 onChange={(e) => setMoodNote(e.target.value)}
                 placeholder="Qu'est-ce qui s'est bien passé ? Qu'est-ce que tu veux améliorer ?"
-                className="w-full text-sm border border-gray-200 rounded-xl p-3 resize-none h-24 focus:outline-none focus:border-orange-300"
+                className="w-full text-sm border border-gray-200 rounded-xl p-3 resize-none h-24 focus:outline-none focus:border-blue-300"
               />
             </div>
           </div>
@@ -372,14 +372,14 @@ export default function RecapPage() {
           <div className="card">
             <h3 className="section-title mb-4">Résumé des points</h3>
             <div className="space-y-2">
-              <div className="flex justify-between items-center p-3 bg-orange-50 rounded-xl">
+              <div className="flex justify-between items-center p-3 bg-blue-50 rounded-xl">
                 <div>
                   <span className="text-sm text-orange-700 font-medium">Tâches</span>
-                  <p className="text-xs text-orange-500 mt-0.5">
+                  <p className="text-xs text-blue-500 mt-0.5">
                     {doneTasksCount}/{todayTasks.length} faites → {Math.round(taskCompletionRatio * 100)}% × {TASKS_TOTAL_POINTS} pts
                   </p>
                 </div>
-                <span className="text-lg font-extrabold text-orange-600">+{taskPoints}</span>
+                <span className="text-lg font-extrabold text-blue-600">+{taskPoints}</span>
               </div>
               <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-xl">
                 <div>
@@ -407,7 +407,7 @@ export default function RecapPage() {
           <div className="card">
             <h3 className="section-title mb-3">Score total</h3>
             <div className="flex items-end gap-2">
-              <span className="text-5xl font-extrabold text-orange-500">
+              <span className="text-5xl font-extrabold text-blue-500">
                 {(totalBase + netPoints).toFixed(1).replace(".0", "")}
               </span>
               <span className="text-gray-400 mb-1">pts</span>

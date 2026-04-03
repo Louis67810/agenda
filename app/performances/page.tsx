@@ -5,7 +5,7 @@ import { useState } from "react";
 // ─── Mock data ──────────────────────────────────────────────────────────────
 
 const stats = [
-  { label: "Score total", value: "2 890", unit: "pts", trend: "+290 ce mois", color: "text-orange-500" },
+  { label: "Score total", value: "2 890", unit: "pts", trend: "+290 ce mois", color: "text-blue-500" },
   { label: "Tâches", value: "84", unit: "%", trend: "+7% vs mois dernier", color: "text-emerald-500" },
   { label: "Habitudes", value: "76", unit: "%", trend: "+4% vs mois dernier", color: "text-blue-500" },
   { label: "Focus Pomodoro", value: "48", unit: "h", trend: "Ce mois", color: "text-violet-500" },
@@ -44,7 +44,7 @@ const dailyPoints = Array.from({ length: 30 }, (_, i) => ({
 })).map((d) => ({ ...d, tasksDone: Math.floor(d.tasksTotal * (0.5 + Math.random() * 0.5)) }));
 
 const objectives = [
-  { title: "Maîtriser Next.js 15", progress: 72, color: "bg-orange-500" },
+  { title: "Maîtriser Next.js 15", progress: 72, color: "bg-blue-400" },
   { title: "Courir 10 km < 50 min", progress: 55, color: "bg-emerald-500" },
   { title: "Épargner 2 000 €", progress: 80, color: "bg-blue-500" },
   { title: "Lire 12 livres", progress: 25, color: "bg-purple-500" },
@@ -88,9 +88,9 @@ function DayDetailModal({ day, onClose }: DayDetailProps) {
 
         {/* Points breakdown */}
         <div className="grid grid-cols-2 gap-2">
-          <div className="bg-orange-50 rounded-xl p-3">
-            <p className="text-xs text-orange-600 font-semibold">Tâches</p>
-            <p className="text-xl font-bold text-orange-600">+{day.taskPoints}</p>
+          <div className="bg-blue-50 rounded-xl p-3">
+            <p className="text-xs text-blue-600 font-semibold">Tâches</p>
+            <p className="text-xl font-bold text-blue-600">+{day.taskPoints}</p>
             <p className="text-[10px] text-gray-400">{day.tasksDone}/{day.tasksTotal} faites</p>
           </div>
           <div className="bg-emerald-50 rounded-xl p-3">
@@ -110,9 +110,9 @@ function DayDetailModal({ day, onClose }: DayDetailProps) {
           </div>
         </div>
 
-        <div className="flex justify-between items-center p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-100">
-          <span className="text-sm font-semibold text-orange-700">Total du jour</span>
-          <span className="text-xl font-extrabold text-orange-500">+{total.toFixed(1)}</span>
+        <div className="flex justify-between items-center p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-100">
+          <span className="text-sm font-semibold text-blue-700">Total du jour</span>
+          <span className="text-xl font-extrabold text-blue-500">+{total.toFixed(1)}</span>
         </div>
       </div>
     </div>
@@ -170,7 +170,7 @@ export default function PerformancesPage() {
           {scoreHistory.map((val, i) => (
             <div key={i} className="flex-1 flex flex-col items-center justify-end">
               <div
-                className="w-full rounded-t-sm bg-orange-400 opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
+                className="w-full rounded-t-sm bg-blue-400 opacity-80 hover:opacity-100 transition-opacity cursor-pointer"
                 style={{ height: `${(val / maxScore) * 100}%` }}
                 title={`Jour ${i + 1} — ${val} pts`}
               />
@@ -193,7 +193,7 @@ export default function PerformancesPage() {
                 <span className="text-xs text-gray-400 w-6">{w.week}</span>
                 <div className="flex-1 bg-gray-100 rounded-full h-5 overflow-hidden">
                   <div
-                    className="h-full bg-orange-400 rounded-full flex items-center justify-end pr-2 transition-all"
+                    className="h-full bg-blue-400 rounded-full flex items-center justify-end pr-2 transition-all"
                     style={{ width: `${(w.done / w.total) * 100}%` }}
                   >
                     <span className="text-[10px] text-white font-bold">{w.done}</span>
@@ -293,7 +293,7 @@ export default function PerformancesPage() {
               <button
                 key={d.day}
                 onClick={() => setSelectedDay(d)}
-                className={`aspect-square rounded-lg ${colorClass} flex items-center justify-center hover:ring-2 hover:ring-orange-400 transition-all`}
+                className={`aspect-square rounded-lg ${colorClass} flex items-center justify-center hover:ring-2 hover:ring-blue-400 transition-all`}
                 title={`Jour ${d.day} — +${total.toFixed(1)} pts`}
               >
                 <span className={`text-[10px] font-bold ${intensity >= 0.4 ? "text-white" : "text-gray-500"}`}>{d.day}</span>
@@ -303,7 +303,7 @@ export default function PerformancesPage() {
         </div>
         <div className="flex gap-4 mt-3 text-xs text-gray-400">
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-gray-100 inline-block border border-gray-200" /> Faible</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-300 inline-block" /> Moyen</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-orange-300 inline-block" /> Moyen</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-300 inline-block" /> Bien</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500 inline-block" /> Excellent</span>
         </div>
