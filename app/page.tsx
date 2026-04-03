@@ -6,7 +6,7 @@ import { computeHabitStreak, formatDisplayDateTime } from "@/lib/app-state";
 import { CATEGORY_LABELS } from "@/lib/app-state";
 
 export default function HomePage() {
-  const { ready, tasks, habits, objectives, metrics, getObjectiveProgress, today } = useAppState();
+  const { ready, tasks, habits, objectives, metrics, getObjectiveProgress, today, updateTask, toggleHabitForDate } = useAppState();
 
   if (!ready) return <div className="text-sm text-gray-400">Chargement...</div>;
 
@@ -31,10 +31,13 @@ export default function HomePage() {
             {todayTasks.length === 0 ? (
               <div className="p-4 rounded-xl border border-gray-100 text-sm text-gray-400">Aucune tache planifiee aujourd'hui.</div>
             ) : todayTasks.map((task) => (
-              <div key={task.id} className={`flex items-center gap-4 p-4 rounded-xl border transition-all duration-150 ${task.status === "done" ? "bg-gray-50/70 border-gray-100 opacity-60" : "bg-white border-gray-100"}`}>
-                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${task.status === "done" ? "bg-blue-500 border-blue-500" : "border-gray-300"}`}>
-                  {task.status === "done" ? <span className="text-white text-xs">✓</span> : null}
-                </div>
+              <Link key={task.id} href={`/agenda?task=${task.id}`} className={`flex items-center gap-4 p-4 rounded-xl border transition-all duration-150 ${task.status === "done" ? "bg-gray-50/70 border-gray-100 opacity-60" : "bg-white border-gray-100 hover:border-blue-200 hover:shadow-sm"}`}>
+                <button
+                  onClick={(e) => { e.preventDefault(); updateTask(task.id, { status: task.status === "done" ? "todo" : "done" }); }}
+                  className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${task.status === "done" ? "bg-blue-500 border-blue-500" : "border-gray-300 hover:border-blue-400"}`}
+                >
+                  {task.status === "done" ? <span className="text-white text-xs">?</span> : null}
+                </button>
                 <div className="flex-1 min-w-0">
                   <p className={`text-sm font-semibold ${task.status === "done" ? "line-through text-gray-400" : "text-gray-800"}`}>{task.title}</p>
                   <div className="flex items-center gap-2 mt-1">
@@ -43,7 +46,7 @@ export default function HomePage() {
                   </div>
                 </div>
                 <span className="text-xs font-semibold text-blue-500">{task.importance}/5</span>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -93,14 +96,14 @@ export default function HomePage() {
           </div>
           <div className="space-y-1">
             {todayHabits.map((habit) => (
-              <div key={habit.id} className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-150 ${habit.done ? "bg-blue-50/60" : "hover:bg-gray-50"}`}>
-                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${habit.done ? "bg-blue-500 border-blue-500" : "border-gray-300"}`}>
-                  {habit.done ? <span className="text-white text-xs">✓</span> : null}
+              <div key={habit.id} onClick={() => toggleHabitForDate(habit.id, today, !habit.done)} className={`flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-150 ${habit.done ? "bg-blue-50/60" : "hover:bg-gray-50"}`}>
+                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${habit.done ? "bg-blue-500 border-blue-500" : "border-gray-300 hover:border-blue-400"}`}>
+                  {habit.done ? <span className="text-white text-xs">?</span> : null}
                 </div>
                 <span className="text-base leading-none">{habit.icon}</span>
                 <span className={`flex-1 text-sm font-medium ${habit.done ? "text-gray-400 line-through" : "text-gray-700"}`}>{habit.title}</span>
                 <span className="text-xs text-gray-400">{habit.streak}j</span>
-                <span className="text-blue-400">🔥</span>
+                <span className="text-blue-400">??</span>
               </div>
             ))}
           </div>
@@ -132,3 +135,4 @@ export default function HomePage() {
     </div>
   );
 }
+

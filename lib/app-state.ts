@@ -27,9 +27,33 @@ export interface AppTask {
   status: AppTaskStatus;
   isSimpleTodo: boolean;
   objectiveId?: string;
+  isSplittable?: boolean;
+  splitGroupId?: string;
+  splitPartIndex?: number;
+  splitPartCount?: number;
+  manualScheduled?: boolean;
   scheduledStart?: string;
   scheduledEnd?: string;
   completedAt?: string;
+}
+
+export interface ObjectiveTreeTask {
+  id: string;
+  title: string;
+  taskId?: string;
+  status: AppTaskStatus;
+}
+
+export interface ObjectiveTreeSubcategory {
+  id: string;
+  name: string;
+  tasks: ObjectiveTreeTask[];
+}
+
+export interface ObjectiveTreeCategory {
+  id: string;
+  name: string;
+  subcategories: ObjectiveTreeSubcategory[];
 }
 
 export interface AppObjective {
@@ -41,6 +65,7 @@ export interface AppObjective {
   color: string;
   status: ObjectiveStatus;
   categoryKey: TaskCategory;
+  categories: ObjectiveTreeCategory[];
 }
 
 export interface HabitLog {
@@ -219,6 +244,10 @@ function nextId(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+export function createId(prefix: string) {
+  return nextId(prefix);
+}
+
 function sortTasksForScheduling(tasks: AppTask[]) {
   return [...tasks].sort((a, b) => {
     const scoreA = schedulingScore(a);
@@ -258,6 +287,13 @@ export function scheduleTasks(tasks: AppTask[], blockedSlots: BlockedSlot[]) {
 
   return sorted.map((task) => {
     if (task.status === "done") {
+      return task;
+    }
+
+    if (task.manualScheduled && task.scheduledStart && task.scheduledEnd) {
+      const day = dateFromDateTime(task.scheduledStart) as string;
+      if (!occupied[day]) occupied[day] = [];
+      occupied[day].push({ start: new Date(task.scheduledStart), end: new Date(task.scheduledEnd) });
       return task;
     }
 
@@ -399,6 +435,22 @@ export function createSeedState(): AppStateData {
       color: "bg-violet-500",
       status: "active",
       categoryKey: "travail",
+      categories: [
+        {
+          id: "cat-nextjs-1",
+          name: "Produit",
+          subcategories: [
+            {
+              id: "sub-nextjs-1",
+              name: "Fondations",
+              tasks: [
+                { id: "tree-nextjs-1", title: "Connecter les pages", taskId: "task-1", status: "in_progress" },
+                { id: "tree-nextjs-2", title: "Revoir le recap quotidien", taskId: "task-2", status: "todo" },
+              ],
+            },
+          ],
+        },
+      ],
     },
     {
       id: "obj-running",
@@ -409,6 +461,21 @@ export function createSeedState(): AppStateData {
       color: "bg-emerald-500",
       status: "active",
       categoryKey: "sport",
+      categories: [
+        {
+          id: "cat-run-1",
+          name: "Entrainement",
+          subcategories: [
+            {
+              id: "sub-run-1",
+              name: "Course",
+              tasks: [
+                { id: "tree-run-1", title: "Seance endurance 8 km", taskId: "task-3", status: "todo" },
+              ],
+            },
+          ],
+        },
+      ],
     },
   ];
 
@@ -520,10 +587,11 @@ export function createSeedState(): AppStateData {
   };
 }
 
-export function createTask(input: Omit<AppTask, "id" | "scheduledStart" | "scheduledEnd" | "completedAt">) {
+export function createTask(input: Omit<AppTask, "id" | "scheduledEnd" | "completedAt">) {
   return {
     ...input,
     id: nextId("task"),
+    scheduledEnd: input.scheduledStart ? addMinutesToIso(input.scheduledStart, input.durationMinutes) : undefined,
   } satisfies AppTask;
 }
 

@@ -1,8 +1,10 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import ObjectiveCard from "@/components/objectives/ObjectiveCard";
+import Modal from "@/components/ui/Modal";
 import { useAppState } from "@/components/providers/AppStateProvider";
-import { OBJECTIVE_COLORS, formatDuration, formatDisplayDateTime } from "@/lib/app-state";
+import { OBJECTIVE_COLORS } from "@/lib/app-state";
 import type { TaskCategory } from "@/lib/mock-data";
 
 const CATS: { key: TaskCategory; label: string }[] = [
@@ -16,14 +18,94 @@ const CATS: { key: TaskCategory; label: string }[] = [
   { key: "social", label: "Social" },
 ];
 
+type StatusFilter = "all" | "active" | "completed" | "paused";
+type ObjectiveFormState = {
+  title: string;
+  description: string;
+  importance: number;
+  deadline: string;
+  color: string;
+  categoryKey: TaskCategory;
+  status: "active" | "completed" | "paused";
+};
+
 export default function ObjectifsPage() {
-  const { ready, objectives, createObjective, updateObjective, deleteObjective, createTask, getObjectiveProgress, getObjectiveTasks, today } = useAppState();
-  const [openCreate, setOpenCreate] = useState(false);
-  const [taskForObjective, setTaskForObjective] = useState<string | null>(null);
-  const [form, setForm] = useState({ title: "", description: "", importance: 3, deadline: today, color: "bg-blue-500", categoryKey: "travail" as TaskCategory, status: "active" as const });
-  const [taskForm, setTaskForm] = useState({ title: "", description: "", importance: 3, durationMinutes: 60, deadline: today });
+  const {
+    ready,
+    objectives,
+    today,
+    createObjective,
+    updateObjective,
+    deleteObjective,
+    addObjectiveCategory,
+    addObjectiveSubcategory,
+    addObjectiveTask,
+    toggleObjectiveTask,
+    deleteObjectiveCategory,
+    deleteObjectiveSubcategory,
+    deleteObjectiveTask,
+    getObjectiveProgress,
+  } = useAppState();
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState<ObjectiveFormState>({
+    title: "",
+    description: "",
+    importance: 3,
+    deadline: today,
+    color: "bg-blue-500",
+    categoryKey: "travail" as TaskCategory,
+    status: "active" as const,
+  });
+
+  const filtered = useMemo(
+    () => objectives.filter((objective) => statusFilter === "all" || objective.status === statusFilter),
+    [objectives, statusFilter],
+  );
 
   if (!ready) return <div className="text-sm text-gray-400">Chargement des objectifs...</div>;
+
+  function openCreate() {
+    setEditingId(null);
+    setForm({
+      title: "",
+      description: "",
+      importance: 3,
+      deadline: today,
+      color: "bg-blue-500",
+      categoryKey: "travail",
+      status: "active",
+    });
+    setModalOpen(true);
+  }
+
+  function openEdit(id: string) {
+    const objective = objectives.find((entry) => entry.id === id);
+    if (!objective) return;
+    setEditingId(id);
+    setForm({
+      title: objective.title,
+      description: objective.description,
+      importance: objective.importance,
+      deadline: objective.deadline,
+      color: objective.color,
+      categoryKey: objective.categoryKey,
+      status: objective.status,
+    });
+    setModalOpen(true);
+  }
+
+  function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.title.trim()) return;
+    if (editingId) {
+      updateObjective(editingId, { ...form, title: form.title.trim(), description: form.description.trim() });
+    } else {
+      createObjective({ ...form, title: form.title.trim(), description: form.description.trim() });
+    }
+    setModalOpen(false);
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -32,105 +114,188 @@ export default function ObjectifsPage() {
           <h1 className="text-2xl font-bold text-gray-800">Objectifs</h1>
           <p className="text-sm text-gray-400 mt-1">Suivez vos objectifs et leur progression</p>
         </div>
-        <button onClick={() => setOpenCreate((value) => !value)} className="btn-primary flex items-center gap-2">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+        <button onClick={openCreate} className="btn-primary flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
           Nouvel objectif
         </button>
       </div>
 
-      {openCreate && (
-        <div className="card space-y-4">
-          <div>
-            <label className="text-xs font-medium text-gray-500 block mb-1.5">Titre *</label>
-            <input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-gray-500 block mb-1.5">Description</label>
-            <textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400 resize-none h-20" />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <select value={form.categoryKey} onChange={(e) => setForm((p) => ({ ...p, categoryKey: e.target.value as TaskCategory }))} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400">
-              {CATS.map((cat) => <option key={cat.key} value={cat.key}>{cat.label}</option>)}
-            </select>
-            <select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as typeof form.status }))} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400">
-              <option value="active">En cours</option><option value="paused">En pause</option><option value="completed">Termine</option>
-            </select>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <input type="date" value={form.deadline} onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
-            <select value={form.importance} onChange={(e) => setForm((p) => ({ ...p, importance: Number(e.target.value) }))} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400">
-              {[1,2,3,4,5].map((n) => <option key={n} value={n}>Importance {n}/5</option>)}
-            </select>
-          </div>
-          <div className="flex gap-1.5 flex-wrap">
-            {OBJECTIVE_COLORS.map((color) => <button key={color} type="button" onClick={() => setForm((p) => ({ ...p, color }))} className={`w-6 h-6 rounded-full ${color} ${form.color === color ? "ring-2 ring-offset-1 ring-gray-400 scale-110" : "hover:scale-110"}`} />)}
-          </div>
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => setOpenCreate(false)} className="btn-ghost flex-1">Annuler</button>
-            <button type="button" onClick={() => { if (!form.title.trim()) return; createObjective({ ...form, title: form.title.trim(), description: form.description.trim() }); setOpenCreate(false); setForm({ title: "", description: "", importance: 3, deadline: today, color: "bg-blue-500", categoryKey: "travail", status: "active" }); }} className="btn-primary flex-1">Creer l'objectif</button>
-          </div>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-medium text-gray-500">Statut</label>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+            className="text-sm bg-white border border-gray-200 rounded-lg px-3 py-1.5 text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
+          >
+            <option value="all">Tous</option>
+            <option value="active">En cours</option>
+            <option value="completed">Termines</option>
+            <option value="paused">En pause</option>
+          </select>
+        </div>
+        <span className="text-xs text-gray-400 ml-auto">{filtered.length} objectif{filtered.length > 1 ? "s" : ""}</span>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="text-center py-16 space-y-3">
+          <p className="text-gray-400 text-sm">Aucun objectif pour ce filtre.</p>
+          <button onClick={openCreate} className="btn-secondary">+ Creer un objectif</button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {filtered.map((objective) => (
+            <ObjectiveCard
+              key={objective.id}
+              title={objective.title}
+              description={objective.description}
+              importance={objective.importance}
+              progress={getObjectiveProgress(objective.id)}
+              deadline={objective.deadline}
+              color={objective.color}
+              status={objective.status}
+              categoryKey={objective.categoryKey}
+              categories={objective.categories.map((category) => ({
+                name: category.name,
+                subcategories: category.subcategories.map((subcategory) => ({
+                  name: subcategory.name,
+                  tasks: subcategory.tasks.map((task) => ({
+                    title: task.title,
+                    status: task.status,
+                  })),
+                })),
+              }))}
+              onEdit={() => openEdit(objective.id)}
+              onDelete={() => deleteObjective(objective.id)}
+              onTaskToggle={(catIdx, subIdx, taskIdx) => {
+                const category = objective.categories[catIdx];
+                const subcategory = category?.subcategories[subIdx];
+                const treeTask = subcategory?.tasks[taskIdx];
+                if (!category || !subcategory || !treeTask) return;
+                toggleObjectiveTask(objective.id, category.id, subcategory.id, treeTask.id);
+              }}
+              onAddCategory={(name) => addObjectiveCategory(objective.id, name)}
+              onAddSubcategory={(catIdx, name) => {
+                const category = objective.categories[catIdx];
+                if (category) addObjectiveSubcategory(objective.id, category.id, name);
+              }}
+              onAddTask={(catIdx, subIdx, title) => {
+                const category = objective.categories[catIdx];
+                const subcategory = category?.subcategories[subIdx];
+                if (category && subcategory) addObjectiveTask(objective.id, category.id, subcategory.id, title);
+              }}
+              onDeleteCategory={(catIdx) => {
+                const category = objective.categories[catIdx];
+                if (category) deleteObjectiveCategory(objective.id, category.id);
+              }}
+              onDeleteSubcategory={(catIdx, subIdx) => {
+                const category = objective.categories[catIdx];
+                const subcategory = category?.subcategories[subIdx];
+                if (category && subcategory) deleteObjectiveSubcategory(objective.id, category.id, subcategory.id);
+              }}
+              onDeleteTask={(catIdx, subIdx, taskIdx) => {
+                const category = objective.categories[catIdx];
+                const subcategory = category?.subcategories[subIdx];
+                const treeTask = subcategory?.tasks[taskIdx];
+                if (category && subcategory && treeTask) {
+                  deleteObjectiveTask(objective.id, category.id, subcategory.id, treeTask.id);
+                }
+              }}
+            />
+          ))}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {objectives.map((objective) => {
-          const progress = getObjectiveProgress(objective.id);
-          const objectiveTasks = getObjectiveTasks(objective.id);
-          const showTaskForm = taskForObjective === objective.id;
-          return (
-            <div key={objective.id} className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden hover:shadow-md hover:border-gray-200 transition-all duration-200">
-              <div className={`h-1.5 ${objective.color}`} />
-              <div className="p-5 space-y-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-bold text-gray-800">{objective.title}</h3>
-                    <p className="text-xs text-gray-400 mt-1 line-clamp-2">{objective.description}</p>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <select value={objective.status} onChange={(e) => updateObjective(objective.id, { status: e.target.value as typeof objective.status })} className="text-xs border border-gray-200 rounded-lg px-2 py-1 text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-400">
-                      <option value="active">En cours</option><option value="paused">Pause</option><option value="completed">Termine</option>
-                    </select>
-                    <button onClick={() => deleteObjective(objective.id)} className="text-xs text-red-500 hover:text-red-600">Supprimer</button>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 mt-3 flex-wrap">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-700">{CATS.find((cat) => cat.key === objective.categoryKey)?.label}</span>
-                  <span className="inline-flex items-center gap-1 text-xs text-gray-400 ml-auto">{objective.deadline}</span>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-1.5"><span className="text-xs text-gray-500">Progression</span><span className="text-xs font-bold text-gray-700">{progress}%</span></div>
-                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden"><div className={`h-full rounded-full transition-all duration-500 ${objective.color}`} style={{ width: `${progress}%` }} /></div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <button onClick={() => setTaskForObjective(showTaskForm ? null : objective.id)} className="text-xs font-medium text-blue-500 hover:text-blue-600">Ajouter une tache</button>
-                  <span className="text-xs text-gray-400">{objectiveTasks.length} tache{objectiveTasks.length > 1 ? "s" : ""}</span>
-                </div>
-                {showTaskForm && (
-                  <div className="border-t border-gray-100 pt-3 space-y-3">
-                    <input value={taskForm.title} onChange={(e) => setTaskForm((p) => ({ ...p, title: e.target.value }))} placeholder="Titre de la tache" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400" />
-                    <textarea value={taskForm.description} onChange={(e) => setTaskForm((p) => ({ ...p, description: e.target.value }))} placeholder="Description" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm h-20 resize-none focus:outline-none focus:border-blue-400" />
-                    <div className="grid grid-cols-3 gap-2">
-                      <input type="number" min={15} step={15} value={taskForm.durationMinutes} onChange={(e) => setTaskForm((p) => ({ ...p, durationMinutes: Number(e.target.value) }))} className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm" />
-                      <select value={taskForm.importance} onChange={(e) => setTaskForm((p) => ({ ...p, importance: Number(e.target.value) }))} className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm">{[1,2,3,4,5].map((n) => <option key={n} value={n}>Imp. {n}</option>)}</select>
-                      <input type="date" value={taskForm.deadline} onChange={(e) => setTaskForm((p) => ({ ...p, deadline: e.target.value }))} className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm" />
-                    </div>
-                    <button type="button" onClick={() => { if (!taskForm.title.trim()) return; createTask({ title: taskForm.title.trim(), description: taskForm.description.trim() || undefined, categoryKey: objective.categoryKey, importance: taskForm.importance, durationMinutes: taskForm.durationMinutes, deadline: taskForm.deadline || undefined, status: "todo", isSimpleTodo: false, objectiveId: objective.id }); setTaskForObjective(null); setTaskForm({ title: "", description: "", importance: 3, durationMinutes: 60, deadline: today }); }} className="btn-primary w-full">Creer la tache</button>
-                  </div>
-                )}
-                <div className="space-y-2">
-                  {objectiveTasks.map((task) => (
-                    <div key={task.id} className="bg-gray-50 rounded-xl px-3 py-2.5">
-                      <div className="flex items-center justify-between gap-2"><p className={`text-xs font-medium ${task.status === "done" ? "line-through text-gray-400" : "text-gray-700"}`}>{task.title}</p><span className="text-[10px] text-gray-400">{task.status}</span></div>
-                      <p className="text-[10px] text-gray-400 mt-1">{formatDuration(task.durationMinutes)} · {formatDisplayDateTime(task.scheduledStart)}</p>
-                    </div>
-                  ))}
-                  {objectiveTasks.length === 0 && <p className="text-xs text-gray-400">Aucune tache reliee pour le moment.</p>}
-                </div>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingId ? "Modifier l'objectif" : "Nouvel objectif"}>
+        <form onSubmit={handleSave} className="space-y-4">
+          <div>
+            <label className="text-xs font-medium text-gray-500 block mb-1.5">Titre *</label>
+            <input
+              autoFocus
+              type="text"
+              value={form.title}
+              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
+              required
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500 block mb-1.5">Description</label>
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400 resize-none h-20"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-gray-500 block mb-1.5">Categorie</label>
+              <select
+                value={form.categoryKey}
+                onChange={(e) => setForm((p) => ({ ...p, categoryKey: e.target.value as TaskCategory }))}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
+              >
+                {CATS.map((cat) => <option key={cat.key} value={cat.key}>{cat.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-500 block mb-1.5">Statut</label>
+              <select
+                value={form.status}
+                onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as typeof form.status }))}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
+              >
+                <option value="active">En cours</option>
+                <option value="paused">En pause</option>
+                <option value="completed">Termine</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500 block mb-1.5">Importance</label>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button key={n} type="button" onClick={() => setForm((p) => ({ ...p, importance: n }))} className="flex-1">
+                  <svg className={`w-6 h-6 mx-auto transition-colors ${n <= form.importance ? "text-amber-400" : "text-gray-200"}`} fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-gray-500 block mb-1.5">Deadline</label>
+              <input
+                type="date"
+                value={form.deadline}
+                onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-400"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-500 block mb-1.5">Couleur</label>
+              <div className="flex gap-1.5 flex-wrap">
+                {OBJECTIVE_COLORS.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() => setForm((p) => ({ ...p, color }))}
+                    className={`w-6 h-6 rounded-full ${color} ${form.color === color ? "ring-2 ring-offset-1 ring-gray-400 scale-110" : "hover:scale-110"}`}
+                  />
+                ))}
               </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={() => setModalOpen(false)} className="btn-ghost flex-1">Annuler</button>
+            <button type="submit" className="btn-primary flex-1">{editingId ? "Enregistrer" : "Creer l'objectif"}</button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
+
