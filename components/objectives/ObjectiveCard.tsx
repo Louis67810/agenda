@@ -136,7 +136,7 @@ export default function ObjectiveCard({ title, description, importance, progress
         </div>
 
         {/* Expand toggle */}
-        {categories && categories.length > 0 && (
+        {(categories && (categories.length > 0 || onAddCategory)) && (
           <button
             onClick={() => setExpanded(!expanded)}
             className="mt-3 w-full flex items-center justify-center gap-1.5 text-xs font-medium text-gray-400 hover:text-blue-500 transition-colors py-1"

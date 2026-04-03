@@ -150,6 +150,49 @@ export default function ObjectifsPage() {
     setObjectives((prev) => prev.filter((o) => o.id !== id));
   }
 
+  function handleAddCategory(objId: string, name: string) {
+    setObjectives(prev => prev.map(o => o.id !== objId ? o : {
+      ...o, categories: [...o.categories, { name, subcategories: [] }]
+    }));
+  }
+  function handleAddSubcategory(objId: string, catIdx: number, name: string) {
+    setObjectives(prev => prev.map(o => o.id !== objId ? o : {
+      ...o, categories: o.categories.map((cat, ci) => ci !== catIdx ? cat : {
+        ...cat, subcategories: [...cat.subcategories, { name, tasks: [] }]
+      })
+    }));
+  }
+  function handleAddTask(objId: string, catIdx: number, subIdx: number, title: string) {
+    setObjectives(prev => prev.map(o => o.id !== objId ? o : {
+      ...o, categories: o.categories.map((cat, ci) => ci !== catIdx ? cat : {
+        ...cat, subcategories: cat.subcategories.map((sub, si) => si !== subIdx ? sub : {
+          ...sub, tasks: [...sub.tasks, { title, status: "todo" as const }]
+        })
+      })
+    }));
+  }
+  function handleDeleteCategory(objId: string, catIdx: number) {
+    setObjectives(prev => prev.map(o => o.id !== objId ? o : {
+      ...o, categories: o.categories.filter((_, ci) => ci !== catIdx)
+    }));
+  }
+  function handleDeleteSubcategory(objId: string, catIdx: number, subIdx: number) {
+    setObjectives(prev => prev.map(o => o.id !== objId ? o : {
+      ...o, categories: o.categories.map((cat, ci) => ci !== catIdx ? cat : {
+        ...cat, subcategories: cat.subcategories.filter((_, si) => si !== subIdx)
+      })
+    }));
+  }
+  function handleDeleteTask(objId: string, catIdx: number, subIdx: number, taskIdx: number) {
+    setObjectives(prev => prev.map(o => o.id !== objId ? o : {
+      ...o, categories: o.categories.map((cat, ci) => ci !== catIdx ? cat : {
+        ...cat, subcategories: cat.subcategories.map((sub, si) => si !== subIdx ? sub : {
+          ...sub, tasks: sub.tasks.filter((_, ti) => ti !== taskIdx)
+        })
+      })
+    }));
+  }
+
   function handleTaskToggle(objId: string, catIdx: number, subIdx: number, taskIdx: number) {
     setObjectives((prev) => prev.map((obj) => {
       if (obj.id !== objId) return obj;
@@ -212,6 +255,12 @@ export default function ObjectifsPage() {
               onEdit={() => openEdit(obj)}
               onDelete={() => handleDelete(obj.id)}
               onTaskToggle={(ci, si, ti) => handleTaskToggle(obj.id, ci, si, ti)}
+              onAddCategory={(name) => handleAddCategory(obj.id, name)}
+              onAddSubcategory={(ci, name) => handleAddSubcategory(obj.id, ci, name)}
+              onAddTask={(ci, si, title) => handleAddTask(obj.id, ci, si, title)}
+              onDeleteCategory={(ci) => handleDeleteCategory(obj.id, ci)}
+              onDeleteSubcategory={(ci, si) => handleDeleteSubcategory(obj.id, ci, si)}
+              onDeleteTask={(ci, si, ti) => handleDeleteTask(obj.id, ci, si, ti)}
             />
           ))}
         </div>
