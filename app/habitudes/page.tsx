@@ -1,241 +1,124 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
-import HabitRow from "@/components/habits/HabitRow";
+import { useAppState } from "@/components/providers/AppStateProvider";
+import { computeHabitStreak } from "@/lib/app-state";
 
-interface Habit {
-  id: number;
-  title: string;
-  icon: string;
-  frequency: string;
-  streak: number;
-  done: boolean;
-  targetValue?: number;
-  currentValue?: number;
-  unit?: string;
-  points: number;
-  weekLog: boolean[];
-}
-
-const INITIAL_HABITS: Habit[] = [
-  { id: 1, title: "Marcher 10 000 pas", icon: "🚶", frequency: "Quotidien", streak: 12, done: false, targetValue: 10000, currentValue: 8500, unit: "pas", points: 15, weekLog: [true, true, true, false, true, true, false] },
-  { id: 2, title: "Lire 30 min", icon: "📖", frequency: "Quotidien", streak: 7, done: true, points: 10, weekLog: [true, true, false, true, true, true, true] },
-  { id: 3, title: "Manger sainement", icon: "🥗", frequency: "Quotidien", streak: 3, done: false, points: 10, weekLog: [false, true, true, false, false, true, false] },
-  { id: 4, title: "Sport", icon: "💪", frequency: "Hebdomadaire", streak: 5, done: true, targetValue: 4, currentValue: 3, unit: "séances", points: 20, weekLog: [true, false, false, true, false, true, false] },
-  { id: 5, title: "Méditer", icon: "🧘", frequency: "Quotidien", streak: 21, done: true, points: 10, weekLog: [true, true, true, true, true, true, true] },
-  { id: 6, title: "Travailler 4h", icon: "💻", frequency: "Quotidien", streak: 9, done: false, targetValue: 240, currentValue: 180, unit: "min", points: 20, weekLog: [true, true, true, true, false, true, true] },
-  { id: 7, title: "Boire 2L d'eau", icon: "💧", frequency: "Quotidien", streak: 4, done: false, targetValue: 2000, currentValue: 1200, unit: "ml", points: 5, weekLog: [true, false, true, true, false, false, true] },
-];
-
-const ICONS = ["🚶", "📖", "🥗", "💪", "🧘", "💻", "💧", "🎯", "🏃", "😴", "🎵", "✍️", "🧹", "🚿", "🥦"];
-const FREQUENCIES = ["Quotidien", "Hebdomadaire"];
-
-let nextId = 100;
+const ICONS = ["run", "read", "sport", "zen", "water", "goal", "focus", "sleep", "notes", "walk"];
 
 export default function HabitudesPage() {
-  const [habits, setHabits] = useState<Habit[]>(INITIAL_HABITS);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", icon: "🎯", frequency: "Quotidien", points: 10, targetValue: "", unit: "" });
+  const { ready, habits, today, createHabit, deleteHabit, toggleHabitForDate } = useAppState();
+  const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState<{ title: string; icon: string; frequency: "daily" | "weekly"; points: number; targetValue: string; unit: string }>({
+    title: "",
+    icon: "goal",
+    frequency: "daily",
+    points: 10,
+    targetValue: "",
+    unit: "",
+  });
 
-  function toggleHabit(id: number) {
-    setHabits((prev) =>
-      prev.map((h) => h.id === id ? { ...h, done: !h.done } : h)
-    );
-  }
+  if (!ready) return <div className="text-sm text-gray-400">Chargement des habitudes...</div>;
 
-  function deleteHabit(id: number) {
-    setHabits((prev) => prev.filter((h) => h.id !== id));
-  }
-
-  function handleCreate() {
-    if (!form.title.trim()) return;
-    const newHabit: Habit = {
-      id: ++nextId,
-      title: form.title.trim(),
-      icon: form.icon,
-      frequency: form.frequency,
-      streak: 0,
-      done: false,
-      points: Number(form.points) || 10,
-      weekLog: [false, false, false, false, false, false, false],
-      ...(form.targetValue ? { targetValue: Number(form.targetValue), currentValue: 0, unit: form.unit } : {}),
-    };
-    setHabits((prev) => [newHabit, ...prev]);
-    setForm({ title: "", icon: "🎯", frequency: "Quotidien", points: 10, targetValue: "", unit: "" });
-    setModalOpen(false);
-  }
-
-  const completedCount = habits.filter((h) => h.done).length;
-  const totalPoints = habits.reduce((acc, h) => (h.done ? acc + h.points : acc), 0);
-  const bestStreak = Math.max(...habits.map((h) => h.streak), 0);
+  const rows = habits.map((habit) => {
+    const todayLog = habit.logs.find((log) => log.date === today);
+    const streak = computeHabitStreak(habit, today);
+    return { habit, todayLog, streak };
+  });
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      {/* Page header */}
-      <div className="flex items-center justify-between">
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Habitudes</h1>
-          <p className="text-sm text-gray-500 mt-1">Suivez vos habitudes quotidiennes et hebdomadaires</p>
+          <h1 className="text-2xl font-bold text-gray-800">Habitudes</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Les habitudes completees alimentent automatiquement les points, les performances et le recap quotidien.
+          </p>
         </div>
-        <button
-          onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm font-semibold rounded-xl shadow-sm hover:shadow-md transition-all duration-200"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          Nouvelle habitude
+        <button onClick={() => setShowCreate((value) => !value)} className="btn-primary">
+          {showCreate ? "Fermer" : "Nouvelle habitude"}
         </button>
       </div>
 
-      {/* Stats summary */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-4 text-center">
-          <p className="text-2xl font-bold text-gray-900">{completedCount}/{habits.length}</p>
-          <p className="text-xs text-gray-500 mt-0.5">Complétées aujourd&apos;hui</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-4 text-center">
-          <p className="text-2xl font-bold text-orange-600">🔥 {bestStreak}</p>
-          <p className="text-xs text-gray-500 mt-0.5">Meilleure série</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.04)] p-4 text-center">
-          <p className="text-2xl font-bold text-amber-600">+{totalPoints}</p>
-          <p className="text-xs text-gray-500 mt-0.5">Points gagnés</p>
-        </div>
-      </div>
-
-      {/* Habits list */}
-      <div className="space-y-3">
-        {habits.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-gray-400 text-sm">Aucune habitude. Crée-en une !</p>
+      {showCreate && (
+        <div className="card space-y-4">
+          <input value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} placeholder="Nom de l'habitude" className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <select value={form.frequency} onChange={(e) => setForm((prev) => ({ ...prev, frequency: e.target.value as "daily" | "weekly" }))} className="border border-gray-200 rounded-xl px-4 py-3 text-sm">
+              <option value="daily">Quotidienne</option>
+              <option value="weekly">Hebdomadaire</option>
+            </select>
+            <input type="number" min={1} value={form.points} onChange={(e) => setForm((prev) => ({ ...prev, points: Number(e.target.value) }))} className="border border-gray-200 rounded-xl px-4 py-3 text-sm" />
+            <input value={form.targetValue} onChange={(e) => setForm((prev) => ({ ...prev, targetValue: e.target.value }))} placeholder="Cible optionnelle" className="border border-gray-200 rounded-xl px-4 py-3 text-sm" />
+            <input value={form.unit} onChange={(e) => setForm((prev) => ({ ...prev, unit: e.target.value }))} placeholder="Unite" className="border border-gray-200 rounded-xl px-4 py-3 text-sm" />
           </div>
-        )}
-        {habits.map((habit) => (
-          <HabitRow
-            key={habit.id}
-            title={habit.title}
-            icon={habit.icon}
-            streak={habit.streak}
-            done={habit.done}
-            onToggle={() => toggleHabit(habit.id)}
-            targetValue={habit.targetValue}
-            currentValue={habit.currentValue}
-            unit={habit.unit}
-            points={habit.points}
-            frequency={habit.frequency}
-            weekLog={habit.weekLog}
-            onDelete={() => deleteHabit(habit.id)}
-          />
-        ))}
-      </div>
-
-      {/* Modal nouvelle habitude */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setModalOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-800">Nouvelle habitude</h2>
-              <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+          <div className="flex flex-wrap gap-2">
+            {ICONS.map((icon) => (
+              <button key={icon} type="button" onClick={() => setForm((prev) => ({ ...prev, icon }))} className={`rounded-xl border px-3 py-2 text-sm ${form.icon === icon ? "border-orange-400 bg-orange-50 text-orange-600" : "border-gray-200 text-gray-500"}`}>
+                {icon}
               </button>
-            </div>
-
-            {/* Icon picker */}
-            <div>
-              <label className="text-xs font-medium text-gray-500 block mb-2">Icône</label>
-              <div className="flex flex-wrap gap-2">
-                {ICONS.map((ic) => (
-                  <button
-                    key={ic}
-                    onClick={() => setForm((f) => ({ ...f, icon: ic }))}
-                    className={`w-9 h-9 rounded-lg text-lg flex items-center justify-center transition-all ${
-                      form.icon === ic ? "bg-orange-100 ring-2 ring-orange-400" : "bg-gray-100 hover:bg-gray-200"
-                    }`}
-                  >
-                    {ic}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Title */}
-            <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1.5">Nom de l&apos;habitude</label>
-              <input
-                autoFocus
-                type="text"
-                value={form.title}
-                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                placeholder="Ex : Lire 30 min"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-300"
-              />
-            </div>
-
-            {/* Frequency + Points */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-gray-500 block mb-1.5">Fréquence</label>
-                <select
-                  value={form.frequency}
-                  onChange={(e) => setForm((f) => ({ ...f, frequency: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-300"
-                >
-                  {FREQUENCIES.map((fr) => <option key={fr}>{fr}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-gray-500 block mb-1.5">Points</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={100}
-                  value={form.points}
-                  onChange={(e) => setForm((f) => ({ ...f, points: Number(e.target.value) }))}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-300"
-                />
-              </div>
-            </div>
-
-            {/* Optional target */}
-            <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1.5">Objectif chiffré (optionnel)</label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  min={0}
-                  value={form.targetValue}
-                  onChange={(e) => setForm((f) => ({ ...f, targetValue: e.target.value }))}
-                  placeholder="Ex : 10000"
-                  className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-300"
-                />
-                <input
-                  type="text"
-                  value={form.unit}
-                  onChange={(e) => setForm((f) => ({ ...f, unit: e.target.value }))}
-                  placeholder="unité"
-                  className="w-24 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-orange-300"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-1">
-              <button onClick={() => setModalOpen(false)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-                Annuler
-              </button>
-              <button
-                onClick={handleCreate}
-                disabled={!form.title.trim()}
-                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm font-semibold shadow-sm hover:shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Créer
-              </button>
-            </div>
+            ))}
+          </div>
+          <div className="flex justify-end">
+            <button
+              className="btn-primary"
+              onClick={() => {
+                if (!form.title.trim()) return;
+                createHabit({
+                  title: form.title.trim(),
+                  icon: form.icon,
+                  frequency: form.frequency,
+                  points: form.points,
+                  targetValue: form.targetValue ? Number(form.targetValue) : undefined,
+                  unit: form.unit || undefined,
+                });
+                setForm({ title: "", icon: "goal", frequency: "daily", points: 10, targetValue: "", unit: "" });
+                setShowCreate(false);
+              }}
+            >
+              Creer l'habitude
+            </button>
           </div>
         </div>
       )}
+
+      <div className="space-y-3">
+        {rows.map(({ habit, todayLog, streak }) => (
+          <div key={habit.id} className="card">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => toggleHabitForDate(habit.id, today, !(todayLog?.done ?? false), todayLog?.value)}
+                  className={`h-8 w-8 rounded-xl border-2 flex items-center justify-center ${todayLog?.done ? "bg-orange-500 border-orange-500 text-white" : "border-gray-300"}`}
+                >
+                  {todayLog?.done ? "✓" : ""}
+                </button>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm uppercase tracking-wide text-gray-400">{habit.icon}</span>
+                    <h3 className={`font-semibold ${todayLog?.done ? "text-gray-400 line-through" : "text-gray-800"}`}>{habit.title}</h3>
+                    <span className="text-xs rounded-full bg-gray-100 px-2 py-1 text-gray-500">{habit.frequency === "daily" ? "quotidienne" : "hebdomadaire"}</span>
+                    <span className="text-xs rounded-full bg-amber-50 px-2 py-1 text-amber-600">+{habit.points} points</span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">Serie actuelle : {streak} jours</p>
+                </div>
+              </div>
+              <button onClick={() => deleteHabit(habit.id)} className="rounded-xl border border-red-200 px-3 py-2 text-sm text-red-500 hover:bg-red-50">Supprimer</button>
+            </div>
+            {habit.targetValue && (
+              <div className="mt-4 flex items-center gap-3">
+                <input
+                  type="number"
+                  value={todayLog?.value ?? ""}
+                  onChange={(e) => toggleHabitForDate(habit.id, today, todayLog?.done ?? false, Number(e.target.value))}
+                  className="border border-gray-200 rounded-xl px-4 py-3 text-sm w-40"
+                />
+                <span className="text-sm text-gray-500">/ {habit.targetValue} {habit.unit}</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

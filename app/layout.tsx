@@ -3,6 +3,7 @@ import "./globals.css";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import PomodoroTimer from "@/components/pomodoro/PomodoroTimer";
+import { AppStateProvider } from "@/components/providers/AppStateProvider";
 
 export const metadata: Metadata = {
   title: "Agenda — Organisation Personnelle",
@@ -18,13 +19,14 @@ export default function RootLayout({
   return (
     <html lang="fr" className="light">
       <body className="bg-stone-50 text-gray-800 antialiased">
-        <Sidebar />
-        {/* Main area offset by sidebar width */}
-        <div className="ml-60 min-h-screen flex flex-col transition-all duration-200">
-          <Header />
-          <main className="flex-1 p-8">{children}</main>
-        </div>
-        <PomodoroTimer />
+        <AppStateProvider>
+          <Sidebar />
+          <div className="ml-60 min-h-screen flex flex-col transition-all duration-200">
+            <Header />
+            <main className="flex-1 p-8">{children}</main>
+          </div>
+          <PomodoroTimer />
+        </AppStateProvider>
       </body>
     </html>
   );
