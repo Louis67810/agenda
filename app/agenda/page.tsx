@@ -258,6 +258,8 @@ function QuickAddModal({ date, onClose, onAdd, existingTasks }: { date: string; 
 const H_START=7, H_END=22, SLOT_H=60;
 const TOTAL_H=(H_END-H_START)*SLOT_H, TOTAL_MIN=(H_END-H_START)*60;
 
+const DIAGONAL_BG = "repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(0,0,0,0.025) 8px, rgba(0,0,0,0.026) 9px)";
+
 function WeeklyView({ year, month, day, taskMap, onTaskClick, onDayClick }: {
   year: number; month: number; day: number;
   taskMap: Record<string, Task[]>;
@@ -322,7 +324,8 @@ function WeeklyView({ year, month, day, taskMap, onTaskClick, onDayClick }: {
                 className="relative border-r border-gray-100 last:border-r-0 cursor-pointer"
                 style={{
                   height:`${TOTAL_H}px`,
-                  backgroundColor: isToday ? "rgba(59,130,246,0.04)" : "#F8FAFC",
+                  backgroundColor: isToday ? "rgba(59,130,246,0.03)" : "white",
+                  backgroundImage: DIAGONAL_BG,
                 }}
                 onClick={()=>onDayClick(ds)}
               >

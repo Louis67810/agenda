@@ -18,6 +18,7 @@ export interface FullTask {
   deadline?: string;
   scheduledDate?: string;
   status: "todo" | "in_progress" | "done";
+  completedAt?: string;
   recurring?: boolean;
   recurringDayOfWeek?: number;
   recurringTime?: string;
@@ -117,7 +118,9 @@ export default function TachesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<FullTask | null>(null);
 
-  let filtered = [...tasks];
+  // Hide tasks completed before today
+  const visibleTasks = tasks.filter((t) => !(t.status === "done" && t.completedAt && t.completedAt < TODAY));
+  let filtered = [...visibleTasks];
 
   if (todayOnly) filtered = filtered.filter((t) => t.scheduledDate === TODAY);
 
@@ -145,14 +148,14 @@ export default function TachesPage() {
       if (t.id !== id) return t;
       const eff = effectiveStatus(t);
       if (eff === "in_progress") {
-        // en cours → done
-        return { ...t, status: "done" };
+        // en cours → done (keep in list today, hidden next day)
+        return { ...t, status: "done", completedAt: TODAY };
       } else if (eff === "todo") {
-        // à faire → en cours (schedule today)
+        // à faire → planifier pour aujourd'hui
         return { ...t, scheduledDate: TODAY };
       } else {
-        // done → reset to todo, clear scheduledDate
-        return { ...t, status: "todo", scheduledDate: undefined };
+        // done → reset
+        return { ...t, status: "todo", scheduledDate: undefined, completedAt: undefined };
       }
     }));
   }
@@ -177,9 +180,9 @@ export default function TachesPage() {
   function openCreate() { setEditingTask(null); setModalOpen(true); }
   function openEdit(task: FullTask) { setEditingTask(task); setModalOpen(true); }
 
-  const doneCnt = tasks.filter((t) => t.status === "done").length;
-  const inProgressCnt = tasks.filter((t) => effectiveStatus(t) === "in_progress").length;
-  const todayCount = tasks.filter((t) => t.scheduledDate === TODAY && t.status !== "done").length;
+  const doneCnt = visibleTasks.filter((t) => t.status === "done").length;
+  const inProgressCnt = visibleTasks.filter((t) => effectiveStatus(t) === "in_progress").length;
+  const todayCount = visibleTasks.filter((t) => t.scheduledDate === TODAY && t.status !== "done").length;
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -216,21 +219,20 @@ export default function TachesPage() {
         </div>
       )}
 
-      {/* Tabs + Aujourd'hui toggle */}
-      <div className="flex items-center gap-3">
-        <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
-          <button
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 bg-white text-gray-800 shadow-sm"
-          >
-            Toutes
-          </button>
-        </div>
+      {/* Tabs - mutual toggle */}
+      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
         <button
-          onClick={() => setTodayOnly((v) => !v)}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-150 border ${
-            todayOnly
-              ? "bg-blue-50 border-blue-300 text-blue-700"
-              : "bg-white border-gray-200 text-gray-500 hover:text-gray-700"
+          onClick={() => setTodayOnly(false)}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+            !todayOnly ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          Toutes
+        </button>
+        <button
+          onClick={() => setTodayOnly(true)}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+            todayOnly ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"
           }`}
         >
           Aujourd&apos;hui

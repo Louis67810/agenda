@@ -21,6 +21,12 @@ interface ObjectiveCardProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onTaskToggle?: (catIdx: number, subIdx: number, taskIdx: number) => void;
+  onAddCategory?: (name: string) => void;
+  onAddSubcategory?: (catIdx: number, name: string) => void;
+  onAddTask?: (catIdx: number, subIdx: number, title: string) => void;
+  onDeleteCategory?: (catIdx: number) => void;
+  onDeleteSubcategory?: (catIdx: number, subIdx: number) => void;
+  onDeleteTask?: (catIdx: number, subIdx: number, taskIdx: number) => void;
 }
 
 const statusConfig = {
@@ -35,17 +41,23 @@ const taskStatusDot: Record<string, string> = {
   done: "bg-emerald-500",
 };
 
-export default function ObjectiveCard({ title, description, importance, progress, deadline, color, status, categoryKey, categories, onEdit, onDelete, onTaskToggle }: ObjectiveCardProps) {
+export default function ObjectiveCard({ title, description, importance, progress, deadline, color, status, categoryKey, categories, onEdit, onDelete, onTaskToggle, onAddCategory, onAddSubcategory, onAddTask, onDeleteCategory, onDeleteSubcategory, onDeleteTask }: ObjectiveCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [openCats, setOpenCats] = useState<Set<string>>(new Set());
   const [openSubs, setOpenSubs] = useState<Set<string>>(new Set());
   const [menuOpen, setMenuOpen] = useState(false);
+  const [newCatInput, setNewCatInput] = useState("");
+  const [showNewCat, setShowNewCat] = useState(false);
+  const [newSubInputs, setNewSubInputs] = useState<Record<number, string>>({});
+  const [showNewSub, setShowNewSub] = useState<Record<number, boolean>>({});
+  const [newTaskInputs, setNewTaskInputs] = useState<Record<string, string>>({});
+  const [showNewTask, setShowNewTask] = useState<Record<string, boolean>>({});
 
   const statusCfg = statusConfig[status];
   const catColor = categoryKey ? categoryColors[categoryKey] : { bg: "bg-gray-100", text: "text-gray-700" };
 
-  function toggleCat(name: string) {
-    setOpenCats((p) => { const n = new Set(p); n.has(name) ? n.delete(name) : n.add(name); return n; });
+  function toggleCat(key: string) {
+    setOpenCats((p) => { const n = new Set(p); n.has(key) ? n.delete(key) : n.add(key); return n; });
   }
   function toggleSub(key: string) {
     setOpenSubs((p) => { const n = new Set(p); n.has(key) ? n.delete(key) : n.add(key); return n; });
@@ -140,68 +152,209 @@ export default function ObjectiveCard({ title, description, importance, progress
         {expanded && categories && (
           <div className="mt-3 border-t border-gray-100 pt-3 space-y-1">
             {categories.map((cat, catIdx) => (
-              <div key={cat.name}>
-                <button onClick={() => toggleCat(cat.name)} className="flex items-center gap-2 w-full text-left py-1.5 px-2 rounded-lg hover:bg-gray-50 transition-colors">
-                  <svg className={`w-3 h-3 text-gray-400 transition-transform ${openCats.has(cat.name) ? "rotate-90" : ""}`} fill="currentColor" viewBox="0 0 20 20"><path d="M6 4l8 6-8 6V4z" /></svg>
-                  <span className="text-xs font-semibold text-gray-600">{cat.name}</span>
-                  <span className="text-[10px] text-gray-300 ml-auto">
-                    {cat.subcategories.reduce((a, s) => a + s.tasks.filter((t) => t.status === "done").length, 0)}/
-                    {cat.subcategories.reduce((a, s) => a + s.tasks.length, 0)}
-                  </span>
-                </button>
+              <div key={catIdx}>
+                <div className="flex items-center group/cat">
+                  <button onClick={() => toggleCat(`${catIdx}-${cat.name}`)} className="flex items-center gap-2 flex-1 text-left py-1.5 px-2 rounded-lg hover:bg-gray-50 transition-colors">
+                    <svg className={`w-3 h-3 text-gray-400 transition-transform ${openCats.has(`${catIdx}-${cat.name}`) ? "rotate-90" : ""}`} fill="currentColor" viewBox="0 0 20 20"><path d="M6 4l8 6-8 6V4z" /></svg>
+                    <span className="text-xs font-semibold text-gray-600">{cat.name}</span>
+                    <span className="text-[10px] text-gray-300 ml-auto">
+                      {cat.subcategories.reduce((a, s) => a + s.tasks.filter((t) => t.status === "done").length, 0)}/
+                      {cat.subcategories.reduce((a, s) => a + s.tasks.length, 0)}
+                    </span>
+                  </button>
+                  {onDeleteCategory && (
+                    <button
+                      onClick={() => onDeleteCategory(catIdx)}
+                      className="ml-1 px-1 text-gray-300 hover:text-red-400 text-xs opacity-0 group-hover/cat:opacity-100 transition-opacity"
+                      title="Supprimer la catégorie"
+                    >×</button>
+                  )}
+                </div>
 
-                {openCats.has(cat.name) && (
+                {openCats.has(`${catIdx}-${cat.name}`) && (
                   <div className="ml-4 space-y-0.5">
                     {cat.subcategories.map((sub, subIdx) => {
-                      const subKey = `${cat.name}-${sub.name}`;
+                      const subKey = `${catIdx}-${subIdx}-${sub.name}`;
+                      const taskInputKey = `${catIdx}-${subIdx}`;
                       return (
-                        <div key={sub.name}>
-                          <button onClick={() => toggleSub(subKey)} className="flex items-center gap-2 w-full text-left py-1 px-2 rounded-lg hover:bg-gray-50 transition-colors">
-                            <svg className={`w-2.5 h-2.5 text-gray-300 transition-transform ${openSubs.has(subKey) ? "rotate-90" : ""}`} fill="currentColor" viewBox="0 0 20 20"><path d="M6 4l8 6-8 6V4z" /></svg>
-                            <span className="text-[11px] font-medium text-gray-500">{sub.name}</span>
-                            <span className="text-[10px] text-gray-300 ml-auto">
-                              {sub.tasks.filter((t) => t.status === "done").length}/{sub.tasks.length}
-                            </span>
-                          </button>
+                        <div key={subIdx}>
+                          <div className="flex items-center group/sub">
+                            <button onClick={() => toggleSub(subKey)} className="flex items-center gap-2 flex-1 text-left py-1 px-2 rounded-lg hover:bg-gray-50 transition-colors">
+                              <svg className={`w-2.5 h-2.5 text-gray-300 transition-transform ${openSubs.has(subKey) ? "rotate-90" : ""}`} fill="currentColor" viewBox="0 0 20 20"><path d="M6 4l8 6-8 6V4z" /></svg>
+                              <span className="text-[11px] font-medium text-gray-500">{sub.name}</span>
+                              <span className="text-[10px] text-gray-300 ml-auto">
+                                {sub.tasks.filter((t) => t.status === "done").length}/{sub.tasks.length}
+                              </span>
+                            </button>
+                            {onDeleteSubcategory && (
+                              <button
+                                onClick={() => onDeleteSubcategory(catIdx, subIdx)}
+                                className="ml-1 px-1 text-gray-300 hover:text-red-400 text-xs opacity-0 group-hover/sub:opacity-100 transition-opacity"
+                                title="Supprimer la sous-catégorie"
+                              >×</button>
+                            )}
+                          </div>
 
                           {openSubs.has(subKey) && (
                             <div className="ml-6 space-y-0.5">
                               {sub.tasks.map((task, taskIdx) => (
-                                <button
-                                  key={taskIdx}
-                                  onClick={() => onTaskToggle?.(catIdx, subIdx, taskIdx)}
-                                  className="flex items-center gap-2 py-1.5 px-2 w-full text-left rounded-lg hover:bg-gray-50 transition-colors group"
-                                >
-                                  <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-                                    task.status === "done" ? "bg-emerald-500 border-emerald-500" :
-                                    task.status === "in_progress" ? "border-blue-400" : "border-gray-300 group-hover:border-blue-300"
-                                  }`}>
-                                    {task.status === "done" && (
-                                      <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                      </svg>
-                                    )}
-                                    {task.status === "in_progress" && <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />}
-                                  </div>
-                                  <span className={`text-[11px] ${task.status === "done" ? "text-gray-400 line-through" : "text-gray-600"}`}>
-                                    {task.title}
-                                  </span>
-                                  {task.status !== "done" && (
-                                    <span className="text-[10px] text-gray-300 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
-                                      Cocher
+                                <div key={taskIdx} className="relative group/task">
+                                  <button
+                                    onClick={() => onTaskToggle?.(catIdx, subIdx, taskIdx)}
+                                    className="flex items-center gap-2 py-1.5 px-2 w-full text-left rounded-lg hover:bg-gray-50 transition-colors group"
+                                  >
+                                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                                      task.status === "done" ? "bg-emerald-500 border-emerald-500" :
+                                      task.status === "in_progress" ? "border-blue-400" : "border-gray-300 group-hover:border-blue-300"
+                                    }`}>
+                                      {task.status === "done" && (
+                                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                      )}
+                                      {task.status === "in_progress" && <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />}
+                                    </div>
+                                    <span className={`text-[11px] ${task.status === "done" ? "text-gray-400 line-through" : "text-gray-600"}`}>
+                                      {task.title}
                                     </span>
+                                    {task.status !== "done" && (
+                                      <span className="text-[10px] text-gray-300 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                                        Cocher
+                                      </span>
+                                    )}
+                                  </button>
+                                  {onDeleteTask && (
+                                    <button
+                                      onClick={() => onDeleteTask(catIdx, subIdx, taskIdx)}
+                                      className="absolute right-1 top-1/2 -translate-y-1/2 px-1 text-gray-300 hover:text-red-400 text-xs opacity-0 group-hover/task:opacity-100 transition-opacity"
+                                      title="Supprimer la tâche"
+                                    >×</button>
                                   )}
-                                </button>
+                                </div>
                               ))}
+                              {onAddTask && (
+                                <div className="mt-1">
+                                  {showNewTask[taskInputKey] ? (
+                                    <div className="flex items-center gap-1 px-2">
+                                      <input
+                                        autoFocus
+                                        type="text"
+                                        value={newTaskInputs[taskInputKey] ?? ""}
+                                        onChange={(e) => setNewTaskInputs((p) => ({ ...p, [taskInputKey]: e.target.value }))}
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter") {
+                                            const v = (newTaskInputs[taskInputKey] ?? "").trim();
+                                            if (v) { onAddTask(catIdx, subIdx, v); setNewTaskInputs((p) => ({ ...p, [taskInputKey]: "" })); }
+                                            setShowNewTask((p) => ({ ...p, [taskInputKey]: false }));
+                                          } else if (e.key === "Escape") {
+                                            setShowNewTask((p) => ({ ...p, [taskInputKey]: false }));
+                                          }
+                                        }}
+                                        placeholder="Nouvelle tâche..."
+                                        className="flex-1 text-xs rounded-lg border border-gray-200 px-2 py-1 focus:outline-none focus:border-blue-300"
+                                      />
+                                      <button
+                                        onClick={() => {
+                                          const v = (newTaskInputs[taskInputKey] ?? "").trim();
+                                          if (v) { onAddTask(catIdx, subIdx, v); setNewTaskInputs((p) => ({ ...p, [taskInputKey]: "" })); }
+                                          setShowNewTask((p) => ({ ...p, [taskInputKey]: false }));
+                                        }}
+                                        className="text-blue-500 text-xs hover:text-blue-700"
+                                      >Ajouter</button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => setShowNewTask((p) => ({ ...p, [taskInputKey]: true }))}
+                                      className="text-blue-500 text-xs hover:text-blue-700 px-2 py-0.5"
+                                    >+ Tâche</button>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
                       );
                     })}
+                    {onAddSubcategory && (
+                      <div className="mt-1">
+                        {showNewSub[catIdx] ? (
+                          <div className="flex items-center gap-1 px-2">
+                            <input
+                              autoFocus
+                              type="text"
+                              value={newSubInputs[catIdx] ?? ""}
+                              onChange={(e) => setNewSubInputs((p) => ({ ...p, [catIdx]: e.target.value }))}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  const v = (newSubInputs[catIdx] ?? "").trim();
+                                  if (v) { onAddSubcategory(catIdx, v); setNewSubInputs((p) => ({ ...p, [catIdx]: "" })); }
+                                  setShowNewSub((p) => ({ ...p, [catIdx]: false }));
+                                } else if (e.key === "Escape") {
+                                  setShowNewSub((p) => ({ ...p, [catIdx]: false }));
+                                }
+                              }}
+                              placeholder="Nouvelle sous-catégorie..."
+                              className="flex-1 text-xs rounded-lg border border-gray-200 px-2 py-1 focus:outline-none focus:border-blue-300"
+                            />
+                            <button
+                              onClick={() => {
+                                const v = (newSubInputs[catIdx] ?? "").trim();
+                                if (v) { onAddSubcategory(catIdx, v); setNewSubInputs((p) => ({ ...p, [catIdx]: "" })); }
+                                setShowNewSub((p) => ({ ...p, [catIdx]: false }));
+                              }}
+                              className="text-blue-500 text-xs hover:text-blue-700"
+                            >Ajouter</button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setShowNewSub((p) => ({ ...p, [catIdx]: true }))}
+                            className="text-blue-500 text-xs hover:text-blue-700 px-2 py-0.5"
+                          >+ Sous-catégorie</button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
             ))}
+            {onAddCategory && (
+              <div className="mt-2">
+                {showNewCat ? (
+                  <div className="flex items-center gap-1 px-2">
+                    <input
+                      autoFocus
+                      type="text"
+                      value={newCatInput}
+                      onChange={(e) => setNewCatInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          const v = newCatInput.trim();
+                          if (v) { onAddCategory(v); setNewCatInput(""); }
+                          setShowNewCat(false);
+                        } else if (e.key === "Escape") {
+                          setShowNewCat(false);
+                        }
+                      }}
+                      placeholder="Nouvelle catégorie..."
+                      className="flex-1 text-xs rounded-lg border border-gray-200 px-2 py-1 focus:outline-none focus:border-blue-300"
+                    />
+                    <button
+                      onClick={() => {
+                        const v = newCatInput.trim();
+                        if (v) { onAddCategory(v); setNewCatInput(""); }
+                        setShowNewCat(false);
+                      }}
+                      className="text-blue-500 text-xs hover:text-blue-700"
+                    >Ajouter</button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowNewCat(true)}
+                    className="text-blue-500 text-xs hover:text-blue-700 px-2 py-0.5"
+                  >+ Ajouter une catégorie</button>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

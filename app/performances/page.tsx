@@ -64,8 +64,8 @@ const pomodoroWeekly = [
 function moodColor(score: number) {
   if (score >= 9) return "bg-emerald-500";
   if (score >= 7) return "bg-emerald-300";
-  if (score >= 5) return "bg-blue-200";
-  if (score >= 3) return "bg-blue-400";
+  if (score >= 5) return "bg-amber-300";
+  if (score >= 3) return "bg-orange-400";
   return "bg-red-400";
 }
 
@@ -287,8 +287,8 @@ export default function PerformancesPage() {
             const colorClass =
               intensity >= 0.8 ? "bg-emerald-500" :
               intensity >= 0.6 ? "bg-emerald-300" :
-              intensity >= 0.4 ? "bg-blue-200" :
-              intensity >= 0.2 ? "bg-blue-200" : "bg-gray-100";
+              intensity >= 0.4 ? "bg-amber-300" :
+              intensity >= 0.2 ? "bg-orange-300" : "bg-gray-100";
             return (
               <button
                 key={d.day}
@@ -303,7 +303,7 @@ export default function PerformancesPage() {
         </div>
         <div className="flex gap-4 mt-3 text-xs text-gray-400">
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-gray-100 inline-block border border-gray-200" /> Faible</span>
-          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-blue-200 inline-block" /> Moyen</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-orange-300 inline-block" /> Moyen</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-300 inline-block" /> Bien</span>
           <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500 inline-block" /> Excellent</span>
         </div>

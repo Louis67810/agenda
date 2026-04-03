@@ -10,20 +10,24 @@ const sections = [
 
 const DAY_LABELS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
-interface DaySchedule {
-  enabled: boolean;
+interface UnavailableSlot {
+  id: string;
   start: string;
   end: string;
 }
+interface DaySchedule {
+  enabled: boolean;
+  slots: UnavailableSlot[];
+}
 
 const DEFAULT_SCHEDULE: DaySchedule[] = [
-  { enabled: true,  start: "08:00", end: "22:00" },
-  { enabled: true,  start: "08:00", end: "22:00" },
-  { enabled: true,  start: "08:00", end: "22:00" },
-  { enabled: true,  start: "08:00", end: "22:00" },
-  { enabled: true,  start: "08:00", end: "22:00" },
-  { enabled: false, start: "09:00", end: "18:00" },
-  { enabled: false, start: "09:00", end: "18:00" },
+  { enabled: true,  slots: [{ id: "1", start: "08:00", end: "22:00" }] },
+  { enabled: true,  slots: [{ id: "1", start: "08:00", end: "22:00" }] },
+  { enabled: true,  slots: [{ id: "1", start: "08:00", end: "22:00" }] },
+  { enabled: true,  slots: [{ id: "1", start: "08:00", end: "22:00" }] },
+  { enabled: true,  slots: [{ id: "1", start: "08:00", end: "22:00" }] },
+  { enabled: false, slots: [] },
+  { enabled: false, slots: [] },
 ];
 
 export default function ParametresPage() {
@@ -38,6 +42,26 @@ export default function ParametresPage() {
 
   function updateDay(i: number, patch: Partial<DaySchedule>) {
     setSchedule((prev) => prev.map((d, idx) => idx === i ? { ...d, ...patch } : d));
+  }
+
+  function updateSlot(dayIdx: number, slotId: string, patch: Partial<UnavailableSlot>) {
+    setSchedule(prev => prev.map((d, i) => i !== dayIdx ? d : {
+      ...d,
+      slots: d.slots.map(s => s.id !== slotId ? s : { ...s, ...patch })
+    }));
+  }
+  function addSlot(dayIdx: number) {
+    const id = `slot-${Date.now()}`;
+    setSchedule(prev => prev.map((d, i) => i !== dayIdx ? d : {
+      ...d,
+      slots: [...d.slots, { id, start: "08:00", end: "12:00" }]
+    }));
+  }
+  function removeSlot(dayIdx: number, slotId: string) {
+    setSchedule(prev => prev.map((d, i) => i !== dayIdx ? d : {
+      ...d,
+      slots: d.slots.filter(s => s.id !== slotId)
+    }));
   }
 
   function handleSave() {
@@ -140,11 +164,11 @@ export default function ParametresPage() {
         </div>
       </div>
 
-      {/* Disponibilité par jour */}
+      {/* Indisponibilités par jour */}
       <div className="card space-y-4">
         <div>
-          <h3 className="section-title">Disponibilité par jour</h3>
-          <p className="text-xs text-gray-400 mt-1">Définis tes plages de travail pour chaque jour de la semaine</p>
+          <h3 className="section-title">Indisponibilités par jour</h3>
+          <p className="text-xs text-gray-400 mt-1">Définis tes créneaux d&apos;indisponibilité par jour</p>
         </div>
 
         <div className="space-y-2">
@@ -157,10 +181,10 @@ export default function ParametresPage() {
                   day.enabled ? "border-gray-200 bg-white" : "border-gray-100 bg-gray-50"
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                   <button
                     onClick={() => updateDay(i, { enabled: !day.enabled })}
-                    className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${
+                    className={`relative w-10 h-5 rounded-full transition-colors shrink-0 mt-1 ${
                       day.enabled ? "bg-blue-500" : "bg-gray-300"
                     }`}
                   >
@@ -170,27 +194,36 @@ export default function ParametresPage() {
                       }`}
                     />
                   </button>
-                  <span className={`w-24 text-sm font-medium shrink-0 ${day.enabled ? "text-gray-800" : "text-gray-400"}`}>
+                  <span className={`w-24 text-sm font-medium shrink-0 mt-1 ${day.enabled ? "text-gray-800" : "text-gray-400"}`}>
                     {label}
                   </span>
                   {day.enabled ? (
-                    <div className="flex items-center gap-2 flex-1">
-                      <input
-                        type="time"
-                        value={day.start}
-                        onChange={(e) => updateDay(i, { start: e.target.value })}
-                        className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-blue-300"
-                      />
-                      <span className="text-gray-300 text-xs">→</span>
-                      <input
-                        type="time"
-                        value={day.end}
-                        onChange={(e) => updateDay(i, { end: e.target.value })}
-                        className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-blue-300"
-                      />
+                    <div className="flex flex-col gap-1.5 flex-1">
+                      {day.slots.map((slot) => (
+                        <div key={slot.id} className="flex items-center gap-2">
+                          <input type="time" value={slot.start} onChange={(e) => updateSlot(i, slot.id, { start: e.target.value })}
+                            className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-blue-300" />
+                          <span className="text-gray-300 text-xs">→</span>
+                          <input type="time" value={slot.end} onChange={(e) => updateSlot(i, slot.id, { end: e.target.value })}
+                            className="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:outline-none focus:border-blue-300" />
+                          {day.slots.length > 1 && (
+                            <button onClick={() => removeSlot(i, slot.id)} className="text-gray-300 hover:text-red-400 transition-colors">
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                      <button onClick={() => addSlot(i)} className="text-xs text-blue-500 hover:text-blue-700 font-medium flex items-center gap-1 mt-1">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Ajouter un créneau
+                      </button>
                     </div>
                   ) : (
-                    <span className="text-xs text-gray-400 italic">Indisponible</span>
+                    <span className="text-xs text-gray-400 italic mt-1">Indisponible</span>
                   )}
                 </div>
               </div>
